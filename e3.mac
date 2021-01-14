@@ -1,0 +1,132 @@
+
+| FIX BUFFS NOT APPLYING - CONSTANTALY RECAST
+| blocked debuffs also recasting
+| when type=none, bots never get their assisting cleared
+| sticking prevents combat buffs
+| getNetBotReadyForHeal not detecting dead state for netbots
+|
+|
+| add curse curing
+
+|#warning
+
+|--------------------------------|
+|- e3.mac	v5.1				-|
+|- Written by Killians of PEQ.	-|
+|--------------------------------|
+
+#turbo 99
+#include e3_Setup.inc
+
+SUB Main(modeSelect)
+	/if (${Me.Dead}==TRUE || ${Me.State.Equal[HOVER]}) {
+	   /call quit "Can't launch while dead."
+	}
+
+	/interrupt
+
+	/deletevar * global
+
+	/declare myClass string outer ${Me.Class.ShortName}
+	/declare wasMedding bool outer false
+	/declare checkReSit bool outer false
+	/declare checkWasMedding bool outer false
+	/declare classFunctionsArray[1] string outer
+	/declare combatCheckTimer timer outer 0
+	/declare channelTalkTimer timer outer 300
+	/declare stopWait bool outer FALSE
+
+
+	/declare i int local
+	/call e3_Setup "${modeSelect}"
+
+	/moveto dist 10
+
+	:mainLoopStart
+	|/while (1) {
+
+		/delay 1
+
+		/if (${Me.Dead}==TRUE || ${Me.State.Equal[HOVER]}) {
+			/if (${assistTarget}!=0) /call setAssistOff
+			/goto :mainLoopStart
+		}
+		|/if (${Me.Feigning}==TRUE) /timed 15 /stand
+
+		/if (!${MacroQuest.GameState.Equal[INGAME]}) /end
+		/if (!${Bool[${Me.Class}]}) /endmacro
+
+		| ANY WINDOWS OPEN? PLAYER MUST BE DOING SOMETHING ON THE TOON, SKIP THIS CYCLE
+		/call checkOpenWindows
+		/if (${Macro.Return}==TRUE) /goto :mainLoopStart
+
+		| CANT DO MUCH WHILE CASTING, SKIP CYCLE
+		/if (${Me.Casting.ID} && ${Me.Class.ShortName.NotEqual[BRD]}) {
+			/doevents
+			/delay 1
+			/goto :mainLoopStart
+		}
+
+		| CONTINUE W THE CYCLE
+		/if (${actionTaken}) /varset actionTaken FALSE
+
+		| STANDING AROUND WITH ATTACK ON? TURN IT OFF
+		/if (${assistTarget}==0 && ${Me.Combat}==TRUE) {
+			/attack off
+		}
+
+		| SCAN NETBOTS TO SEE IF ANYONE IS IN ACTIVE COMBAT. SET A TIMER IF SO.
+		/call check_Combat
+
+		| CALL INCLUDED FEATURES
+		/call heal_Background_Events
+		/call assist_Background_Events
+		/call buffCheck_Background_Events
+		/call basics_Background_Events
+		/call background_Background_Events
+
+		/doevents
+		
+	/goto :mainLoopStart
+	
+/RETURN
+
+SUB checkOpenWindows
+	/if (${Window[BigBankWnd].Open})    /return TRUE
+	/if (${Window[TradeWnd].Open})      /return TRUE
+	/if (${Window[GuildBankWnd].Open})  /return TRUE
+	/if (${Window[MerchantWnd].Open})   /return TRUE
+	/if (${Window[SpellBookWnd].Open})  /return TRUE
+	/return FALSE
+/RETURN
+
+|--------------------------------------------------------------------------------------------------------------------|
+|- Background events and functions that are checked even while casting or otherwise considered active.		   		-|
+|--------------------------------------------------------------------------------------------------------------------|
+|- This function is checked constantly, included events and functions should have minimal character interaction.	-|
+|--------------------------------------------------------------------------------------------------------------------|
+SUB Background_Events
+
+	| autoaccept trade
+	/if (${Window[TradeWnd]}) {
+	 	/if (${Window[TradeWnd].HisTradeReady}) {
+		/notify TradeWnd TRDW_Trade_Button leftmouseup
+		/delay 10
+		/if (${Window[InventoryWindow]}==FALSE) /keypress i
+
+		|| wait for tradewnd to go away
+		|:waitForNoTradeWindow
+		|   /delay 1
+		|/if (${Window[InventoryWindow]}) /goto :waitForNoTradeWindow
+		|/delay 1
+		|/keypress i
+		}
+	}
+
+	/declare i int local
+
+	/for i 1 to ${macroSetupsArray.Size}
+		/if (${Bool[${macroSetupsArray[${i}]}]}) /call ${macroSetupsArray[${i}]}_Background_Events
+	/next i
+
+/RETURN
