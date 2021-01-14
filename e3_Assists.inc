@@ -922,12 +922,12 @@ SUB processDebuffsForTargetID(int targetID)
 
       /if (${iniDebuffs[${i},${bTargetUnderHP}].NotEqual[-]}) {
          /call fullTarget ${targetID}
-         /if (${Target.PctHPs} < ${iniDebuffs[${i},${bTargetUnderLife}]}) /goto :loopnext
+         /if (${Target.PctHPs} < ${iniDebuffs[${i},${bTargetUnderHP}]}) /goto :loopnext
       }
 
       /if (${iniDebuffs[${i},${bTargetOverHP}].NotEqual[-]}) {
          /call fullTarget ${targetID}
-         /if (${Target.PctHPs} <= ${iniDebuffs[${i},${bTargetOverLife}]}) /goto :loopnext
+         /if (${Target.PctHPs} <= ${iniDebuffs[${i},${bTargetOverHP}]}) /goto :loopnext
       }
 
       /if (${iniDebuffs[${i},${bMaxResists}].NotEqual[-]}) {
