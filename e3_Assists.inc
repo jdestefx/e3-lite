@@ -714,7 +714,6 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
          /deletevar ${assistTimerName}
       }
 
-
       :resistRetry
 
       /if (${${processArray}[${i},${bMemInGem}].NotEqual[-]}) {
