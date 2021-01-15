@@ -66,31 +66,31 @@ Supported Flags:
 ---------------------------------------------------------------------------------------------------------------------
 CastableDuringAssist		Lets the buff be casted even if the buffer has an active assist target.
 CastOnlyDuringAssist		Can only be cast during assist. 
-Targets						CSVs of @Class or character names.
-SelfOverMana				Buffer must be at or over this percent mana.
-SelfUnderMana				Buffer must be under this percent mana.
-TargetOverLevel				Target must be at or over this level for this spell.
-NoCancelChecks				This flag will ignore whether or not the target character already has the buff being cast.
-							Netbots has a weird thing where a buff will appear to be "gone" from a character despite 
-							being on it's last few seconds. So, when buffer begins to cast the buff, they will immediately
-							notice the buff is still on the character, and stop casting.  This cycle repeats 4 or 5 
-							times until the buff is actually gone. You will probably want this on most buff entries.
+Targets				CSVs of @Class or character names.
+SelfOverMana			Buffer must be at or over this percent mana.
+SelfUnderMana			Buffer must be under this percent mana.
+TargetOverLevel			Target must be at or over this level for this spell.
+NoCancelChecks			This flag will ignore whether or not the target character already has the buff being cast.
+				Netbots has a weird thing where a buff will appear to be "gone" from a character despite 
+				being on it's last few seconds. So, when buffer begins to cast the buff, they will immediately
+				notice the buff is still on the character, and stop casting.  This cycle repeats 4 or 5 
+				times until the buff is actually gone. You will probably want this on most buff entries.
 
-RequireGroup 				The target must be in the buffer's group.
-RequireGroupInRange			All group memebers must be in range before this spell will cast.
-SelfOverHP					Buffer must be at or over this much HP. Good for shaman canni.
-SelfUnderHP					Buffer must be at under this much HP.
-CastableOnlyResting			Buff can only be cast while not assisting.
-SelfUnderEnd				Buffer must be under this percent endurance.
-SelfOverEnd					Buffer must be at or over this percent endurance.
-ForceSpellID				For odd scenarios (Heroic Bond) where there are multiple spellIDs for the same spell name,
-							You sometimes need to force a spell ID to prevent chain-casting of a spell.
-TargetUnderHP				Target must be under this percent HP.
-TargetOverHP				Target must be at or over this percent HP.
-NotIfShortBuff				Don't cast if the target has this effect in their song window.
-NotIfLongBuff				Don't cast if the target has this effect in their buff window.
-TargetUnderLevel			Target must be under this level.
-TargetOverLevel				Target must be at or over this level.
+RequireGroup 			The target must be in the buffer's group.
+RequireGroupInRange		All group memebers must be in range before this spell will cast.
+SelfOverHP			Buffer must be at or over this much HP. Good for shaman canni.
+SelfUnderHP			Buffer must be at under this much HP.
+CastableOnlyResting		Buff can only be cast while not assisting.
+SelfUnderEnd			Buffer must be under this percent endurance.
+SelfOverEnd			Buffer must be at or over this percent endurance.
+ForceSpellID			For odd scenarios (Heroic Bond) where there are multiple spellIDs for the same spell name,
+				You sometimes need to force a spell ID to prevent chain-casting of a spell.
+TargetUnderHP			Target must be under this percent HP.
+TargetOverHP			Target must be at or over this percent HP.
+NotIfShortBuff			Don't cast if the target has this effect in their song window.
+NotIfLongBuff			Don't cast if the target has this effect in their buff window.
+TargetUnderLevel		Target must be under this level.
+TargetOverLevel			Target must be at or over this level.
 
 
 [Debuffs]
@@ -108,22 +108,22 @@ Supported flags:
 SelfOverMana				Buffer must be over this percent mana.
 SelfUnderMana				Buffer must be under this percent mana.
 SelfUnderEnd				Buffer must be under this percent endurance.
-SelfOverEnd					Buffer must be at or over this percent endurance.
+SelfOverEnd				Buffer must be at or over this percent endurance.
 TargetOverHP				Target must be at or over this percent life.
 TargetUnderHP				Target must be under this percent life.
 TargetUnderLevel			Target must be under this level.
 TargetOverLevel				Target must be at or over this level.
 RequireBodyType				Primarily used to restrict undead nukes to "UNDEAD" type.
-TargetRace					Restrict to certain races.
+TargetRace				Restrict to certain races.
 RequireMobsInProximity			Require this many mobs to be in a small radius. Used for rains or PBAEs.
 RequireMaxMobsInProximity		Prevents casting if there are more than N mobs nearby. Example usage (1) might be to allow clerics 
-								to cast nukes, but only if the group is fighting one at a time.
+					to cast nukes, but only if the group is fighting one at a time.
 RequireTargetClass 			CSV list of class abbreviations.  Good for restricting mana drains to only caster classes.
 RequireNoActiveDisc			Require that there is currently no disc running.  This is good for chaining discs.
-NoSitTimer					Prevents sitting (if medidate is on) for this amount of time after a successful cast.
-							Can be several formats: 50 = 5 seconds.  5s = 5 seconds.
+NoSitTimer				Prevents sitting (if medidate is on) for this amount of time after a successful cast.
+					Can be several formats: 50 = 5 seconds.  5s = 5 seconds.
 RecastDelay 				Adds a delay between casting this spell entry as to not drain mana too fast. Use deci-seconds only.
-							ie.  50 = 5 seconds.  Does not support "5s" syntax.
+					ie.  50 = 5 seconds.  Does not support "5s" syntax.
 
 
 [AssistSpells]
@@ -158,31 +158,31 @@ Antidote=HealPct:100|RequirePoisoned|RequireMaxMobsInProximity:2|UseHealIndex
 
 Supported flags:
 ---------------------------------------------------------------------------------------------
-HealPct							The primary indicator of when to cast this heal.
-Targets 						Restrict the heal to only these targets.
-RequireGroup 					Heal target must be in the caster's group.
-TargetUnderLevel				Target must be under this level.
-TargetOverLevel					Target must be at or over this level.
-RequireDiseased					Target must have a disease on them.
-RequirePoisoned					Target must have a poison on them.
-SelfOverHP						Caster must be at or over this much HP. Good for shaman canni.
-SelfUnderHP						Caster must be at under this much HP.
-SelfOverMana					Caster must be over this percent mana.
-SelfUnderMana					Caster must be under this percent mana.
+HealPct					The primary indicator of when to cast this heal.
+Targets 				Restrict the heal to only these targets.
+RequireGroup 				Heal target must be in the caster's group.
+TargetUnderLevel			Target must be under this level.
+TargetOverLevel				Target must be at or over this level.
+RequireDiseased				Target must have a disease on them.
+RequirePoisoned				Target must have a poison on them.
+SelfOverHP				Caster must be at or over this much HP. Good for shaman canni.
+SelfUnderHP				Caster must be at under this much HP.
+SelfOverMana				Caster must be over this percent mana.
+SelfUnderMana				Caster must be under this percent mana.
 RequireMaxMobsInProximity		Prevents casting if there are more than N mobs nearby.
 RequireHurtPartyMembers			x@y format. X number of party members must be at or below y percent life.
-UseHealIndex					Used in conjunction with [Heal Team] to avoid redundant healing.
-DoCommand						Perform this ad-hoc command before casting the heal. See below for example.
-NotIfShortBuff					Don't cast the heal if this effect is in the song window.
-CheckShortBuffs					Some heals have a buff effect.  This instructs the heal routine to look in the song window. This is
-								important for heal-over-time spells, otherwise the HOT will just repeatedly cast.
-CheckLongBuffs					Some heals have a buff effect.  This instructs the heal rountine to look in the main buff window for
-								the heal spell.
-NoCancelChecks					By default, if the heal target goes above the HealPct threshhold while casting, the heal will
-								automatically interrupt itself.  This can prevent that.  Good for heal entries aimed at tanks where
-								damage might be so heavy that it's worth risking the overhealing, or if the HealPct is low enough
-								that overhealing is very unlikely.
-NoSitTimer						Prevent sitting (if meditate is on) for this amount of time after a successful cast.
+UseHealIndex				Used in conjunction with [Heal Team] to avoid redundant healing.
+DoCommand				Perform this ad-hoc command before casting the heal. See below for example.
+NotIfShortBuff				Don't cast the heal if this effect is in the song window.
+CheckShortBuffs				Some heals have a buff effect.  This instructs the heal routine to look in the song window. This is
+					important for heal-over-time spells, otherwise the HOT will just repeatedly cast.
+CheckLongBuffs				Some heals have a buff effect.  This instructs the heal rountine to look in the main buff window for
+					the heal spell.
+NoCancelChecks				By default, if the heal target goes above the HealPct threshhold while casting, the heal will
+					automatically interrupt itself.  This can prevent that.  Good for heal entries aimed at tanks where
+					damage might be so heavy that it's worth risking the overhealing, or if the HealPct is low enough
+					that overhealing is very unlikely.
+NoSitTimer				Prevent sitting (if meditate is on) for this amount of time after a successful cast.
 
 
 Additional: 
