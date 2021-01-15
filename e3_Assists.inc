@@ -1,27 +1,27 @@
 | MANAGES MELEE ASSISTING, DEBUFFS, NUKES
 
-SUB assist_CharacterSettings
-   /call WriteToIni "${iniFileCharacter},Assist,Auto-Assist" YES
-   /call WriteToIni "${iniFileCharacter},Assist,Stick Point" BEHIND
-   /call WriteToIni "${iniFileCharacter},Assist,Melee" YES
-   /call WriteToIni "${iniFileCharacter},Assist,Melee Distance" 8
-   /call WriteToIni "${iniFileCharacter},Assist,Slay Index" 99
-   /call WriteToIni "${iniFileCharacter},Assist,SlayReferencePoint" ${Me.CleanName}
-   /call WriteToIni "${iniFileCharacter},Assist,BeneficialStrip" NONE
-   /call WriteToIni "${iniFileCharacter},Assist,Tank" NO
-   /call WriteToIni "${iniFileCharacter},Assist,DontTakeAggroFrom" NONE
-   /call WriteToIni "${iniFileCharacter},Assist,OnSlayAssistCommand" NONE
-   /call WriteToIni "${iniFileCharacter},Assist,MaxAssistDistance" 1000
-   /call WriteToIni "${iniFileCharacter},Assist,IgnoreAssistCalls" NO
-   /call WriteToIni "${iniFileCharacter},Assist,MaintainAssistLOS" YES
-   /call WriteToIni "${iniFileCharacter},Assist,AcceptCharmCommands" NO
-   /call WriteToIni "${iniFileCharacter},Assist,CharmSpellName" NONE
-   /call WriteToIni "${iniFileCharacter},Assist,CharmDebuffs" NONE
-   /call WriteToIni "${iniFileCharacter},Assist,CharmBreakCommand" NONE
-   /call WriteToIni "${iniFileCharacter},Assist,AutoMez" NO
-   /call WriteToIni "${iniFileCharacter},Assist,AutoMezSpell" ENTRANCE
-   /call WriteToIni "${iniFileCharacter},Assist,AutoMezSpawnSearch" radius 50 los range 1 10
-   /call WriteToIni "${iniFileCharacter},Assist,AutoMezTimerMarginSeconds" 10
+SUB assist_CharacterSettings(bool backFill)   
+   /call WriteToIni "${iniFileCharacter},Assist,Auto-Assist" YES ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,Stick Point" BEHIND ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,Melee" YES ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,Melee Distance" 8 ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,Slay Index" 99 ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,SlayReferencePoint" ${Me.CleanName} ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,BeneficialStrip" NONE ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,Tank" NO ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,DontTakeAggroFrom" NONE ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,OnSlayAssistCommand" NONE ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,MaxAssistDistance" 1000 ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,IgnoreAssistCalls" NO ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,MaintainAssistLOS" YES ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,AcceptCharmCommands" NO ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,CharmSpellName" NONE ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,CharmDebuffs" NONE ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,CharmBreakCommand" NONE ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoMez" NO ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoMezSpell" ENTRANCE ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoMezSpawnSearch" "radius 50 los range 1 10" ${backFill}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoMezTimerMarginSeconds" 10 ${backFill}
 /RETURN
 
 Sub assist_Setup
@@ -834,7 +834,9 @@ SUB check_autoAbilities
          /delay ${iniAutoAbilities[${i},${bFreeze}].NotEqual[-]}
       }
 
-      /if (${iniAutoAbilities[${i},${bDoCommand}].NotEqual[-]}) /docommand ${iniAutoAbilities[${i},${bDoCommand}]}
+      /if (${iniAutoAbilities[${i},${bDoCommand}].NotEqual[-]}) {
+         /call e3command "${iniAutoAbilities[${i},${bDoCommand}]}"
+      }
       
 
       /if (${Me.AbilityReady[${abilityName}]}==TRUE) {
@@ -1264,3 +1266,4 @@ SUB EVENT_toggleAutomez(string line, string newMode)
    }
 
 /RETURN 
+

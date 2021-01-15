@@ -1,5 +1,5 @@
-SUB heals_CharacterSettings
-	/call WriteToIni "${iniFileCharacter},Misc,XTargetHealsEnabled" NO
+SUB heals_CharacterSettings(bool backFillOnly)
+	/call WriteToIni "${iniFileCharacter},Misc,XTargetHealsEnabled" NO ${backFillOnly}
 /RETURN
 
 SUB heals_Setup
@@ -45,12 +45,12 @@ SUB processHealTargets
 
 		/varset iniHeals[${i},${bTargets}] ${iniHeals[${i},${bTargets}].Replace[|,,]}			
 
-		/if (${iniHeals[${i},${bExcludeTargets}].NotEqual[-]}) {
-			/call processTargets "${iniHeals[${i},${bExcludeTargets}]}"
-			/varset iniHeals[${i},${bExcludeTargets}] ${Macro.Return}
-		}
-
-		/varset iniHeals[${i},${bExcludeTargets}] ${Macro.Return.Replace[|,,]}
+		|/if (${iniHeals[${i},${bExcludeTargets}].NotEqual[-]}) {
+		|	/call processTargets "${iniHeals[${i},${bExcludeTargets}]}"
+		|	/varset iniHeals[${i},${bExcludeTargets}] ${Macro.Return}
+		|}
+		|
+		|/varset iniHeals[${i},${bExcludeTargets}] ${Macro.Return.Replace[|,,]}
 
 	/next i
 	:loopesc

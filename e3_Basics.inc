@@ -29,7 +29,6 @@ Sub basics_Setup
 
    /call getIniToVar "${iniFileCharacter},Misc,EXP Spam" expSpam TRUE
    /call getIniToVar "${iniFileCharacter},Misc,Looter" looter FALSE
-
    /call getIniToVar "${iniFileCharacter},System,BackgroundFPS" backgroundFPS 30
    /call getIniToVar "${iniFileCharacter},System,ForegroundFPS" foregroundFPS 60
    /call getIniToVar "${iniFileCharacter},System,EnageClipDown" enageClipDown FALSE
@@ -47,6 +46,17 @@ Sub basics_Setup
    /varcalc aaExpAmt (${Me.AAPointsSpent} + ${Me.AAPoints} + ${Math.Calc[${Me.PctAAExp}/100]})
 /return
 
+SUB basics_CharacterSettings(bool backFillOnly)
+   /call WriteToIni "${iniFileCharacter},Misc,EQBC Channels" "team" ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Misc,EXP Spam" YES ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Misc,Looter" NO ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},System,BackgroundFPS" 30 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},System,ForegroundFPS" 60 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},System,EnageClipDown" FALSE ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},System,ActorClipPlane" 50 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},System,RenderFG" 1 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},System,RenderBG" 2 ${backFillOnly}
+/RETURN
 
 #EVENT EndMacro "It will take about 5 more seconds to prepare your camp."
 SUB EVENT_EndMacro
@@ -299,13 +309,6 @@ SUB checkLoot
 
    /varset cancelLootTimer 5s
    
-/RETURN
-
-
-SUB basics_CharacterSettings
-   /call WriteToIni "${iniFileCharacter},Misc,EQBC Channels" "team"
-   /call WriteToIni "${iniFileCharacter},Misc,EXP Spam" "On"
-   /call WriteToIni "${iniFileCharacter},Misc,Looter" "On"
 /RETURN
 
 

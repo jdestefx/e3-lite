@@ -116,24 +116,18 @@ SUB IniToArray(Ini_Key, ArrayName, ArrayScope)
 	}
 /RETURN ${ArrayName}
 
-SUB WriteToIni(Ini_Key, WhatToWrite, bool OverWrite)
-
-	| By switching ':'s to '*'s in arguemnt 3, to avoid issues when reading variables from the inis.
-	/if (${Ini_Key.Arg[3,,].Find[:]}) /varset Ini_Key ${Ini_Key.Arg[1,,]},${Ini_Key.Arg[2,,]},${Ini_Key.Arg[3,,].Replace[:,;]}
-	
-	| If the Ini_Key already exists, check overwrite	
-	/if (${Ini[${Ini_Key}].Length}) {
-		/if (${OverWrite}) /goto :OverWrite
-	} else {
-		:OverWrite
-		/if (${Defined[WhatToWrite]}) {
-			/ini "${Ini_Key.Arg[1,,]}" "${Ini_Key.Arg[2,,]}" "${Ini_Key.Arg[3,,]}" "${WhatToWrite}"
-		
-		| Else, create the entry only.
-		} else {
-			/ini "${Ini_Key.Arg[1,,]}" "${Ini_Key.Arg[2,,]}" "${Ini_Key.Arg[3,,]}"
+SUB WriteToIni(string iniFile, string writeContents, bool backFillOnly)
+	/echo BF:${backFillOnly} ${Ini[${iniFile}]}
+	/if (${backFillOnly}==TRUE) {
+		/if (${Ini[${iniFile}].Length}==NULL) {
+			/ECHO "${iniFile.Arg[1,,]}" "${iniFile.Arg[2,,]}" "${iniFile.Arg[3,,]}" "${writeContents}"
+			/ini "${iniFile.Arg[1,,]}" "${iniFile.Arg[2,,]}" "${iniFile.Arg[3,,]}" "${writeContents}"
 		}
+		/return
 	}
+
+	/ini "${iniFile.Arg[1,,]}" "${iniFile.Arg[2,,]}" "${iniFile.Arg[3,,]}" "${writeContents}"
+
 /RETURN
 
 SUB WriteToIniAppend(iniParams, appendVal, joiner)
@@ -532,7 +526,6 @@ SUB isLockoutExpired(string timerName)
 /RETURN
 
 SUB wipeLockout(string timerName)
-	/echo wiping timer ${timerName}
 	/if (${Defined[${timerName}]}==TRUE) {
 		/deletevar ${timerName}
 	}
@@ -570,3 +563,13 @@ sub implode(string listName)
 	/return ${r.Right[-1]}
 /return
 
+
+#event cleanIniFile "<#*#> e3 clean ini"
+sub EVENT_cleanIniFile
+   /echo Backfilling INI file with missing key/values...
+
+   /call assist_CharacterSettings TRUE
+   /call heals_CharacterSettings TRUE
+   /call buffCheck_CharacterSettings TRUE
+   /call basics_CharacterSettings TRUE
+/return

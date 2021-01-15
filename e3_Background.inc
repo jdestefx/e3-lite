@@ -12,20 +12,15 @@ Sub background_Setup
 
    | INI SETTINGS
    /declare eqbcsChannels string outer team
-   /declare inventoryTimer int outer 30
-   /declare closeSpellbookTime int outer 60
    /declare tellRelay string outer -
 
    | JOIN ANY SPECIFIED EQBC CHANNELS
    /call getIniToVar "${iniFileCharacter},Misc,Tell Relay" "tellRelay" "/bc <who> said <msg>"
    /call getIniToVar "${iniFileCharacter},Misc,EQBC Channels" "eqbcsChannels" "team"
-   /call getIniToVar "${iniFileGeneralSettings},Background,Auto-Inventory Timer (Sec)" "inventoryTimer" 30
-   /call getIniToVar "${iniFileGeneralSettings},Background,Close Spellbook Timer (Sec)" "closeSpellbookTime" 60
    
    /if (${EQBC.Connected} && ${Bool[${eqbcsChannels}]}) /timed 3 /bccmd channels ${eqbcsChannels}
 
 /return
-
 
 Sub check_Scatter
    /return

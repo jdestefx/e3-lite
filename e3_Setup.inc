@@ -229,19 +229,18 @@ SUB gatherNetbotNames
 /RETURN
 
 
-SUB makeCharSettingsIniFile
+SUB makeCharSettingsIniFile(bool backFillOnly)
    /declare autoAssistMode string local Off
    /if (${classes_MeleeAssist.Find[${myClass}]}!=NULL) /varset autoAssistMode On
 
    /echo Creating intial INI file for ${Me}...
 
+   /call basics_CharacterSettings
+
    | Channels pre-config
-   /call WriteToIniAppend "${iniFileCharacter},Misc,Tell Relay" "/bc <who> said <msg>" 
-   /call WriteToIniAppend "${iniFileCharacter},Misc,EQBC Channels" "team ${Me.Class.Name.Lower}s" 
    /if (${classes_MeleeAssist.Find[${myClass}]}!=NULL) /call WriteToIniAppend "${iniFileCharacter},Misc,EQBC Channels" "melee" " "
-   /if (${classes_RangeAssist.Find[${myClass}]}!=NULL) /call WriteToIniAppend "${iniFileCharacter},Misc,EQBC Channels" "ranged" " "
    /if (${classes_Heals.Find[${myClass}]}!=NULL) /call WriteToIniAppend "${iniFileCharacter},Misc,EQBC Channels" "healers" " "
-   /if (${classes_RangeAssist.Find[${myClass}]}!=NULL || ${classes_PassiveAssist.Find[${myClass}]}!=NULL) /call WriteToIniAppend "${iniFileCharacter},Misc,EQBC Channels" "ranged" " "
+   /if (${classes_RangeAssist.Find[${myClass}]}!=NULL || ${classes_PassiveAssist.Find[${myClass}]}!=NULL) /call WriteToIniAppend "${iniFileCharacter},Misc,EQBC Channels" "ranged"
 
    /call assist_CharacterSettings
    /call buffCheck_CharacterSettings

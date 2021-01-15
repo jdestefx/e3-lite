@@ -22,9 +22,9 @@ Sub buffs_Setup
 
 /RETURN
 
-SUB buffCheck_CharacterSettings
-   /call WriteToIni "${iniFileCharacter},Misc,AcceptBuffRequests" NO
-   /call WriteToIni "${iniFileCharacter},Misc,BuffRequestMinimumMana" 50
+SUB buffCheck_CharacterSettings(bool backFillOnly)
+   /call WriteToIni "${iniFileCharacter},Misc,AcceptBuffRequests" NO ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Misc,BuffRequestMinimumMana" 50 ${backFillOnly}
 /RETURN
 
 SUB processBuffTargets(string arrayName)
