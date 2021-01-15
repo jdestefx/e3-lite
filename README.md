@@ -4,7 +4,7 @@ e3-lite is an adaptation of the original "killians e3 macro".
 To use, just run /mac e3.  The first time you execute the macro, a basic INI will be created.  Below explains all the areas and what you can do with them.
 
 INI SECTIONS
-======================
+
 [Misc]
 EQBC Channels=team casters ranged					; Channels to be automatically assigned to upon macro start.
 Tell Relay=/bc <who> told me <msg>					; Command to perform whenever a tell is received. <who> and <msg> are replaced with actual values.
