@@ -1251,3 +1251,16 @@ SUB EVENT_charmBreak(string line, string mobName)
    /next i
 /RETURN
 
+
+#event toggleAutomez "[#*#(msg)] e3 automez #1#"
+#event toggleAutomez "<#*#> e3 automez #1#"
+SUB EVENT_toggleAutomez(string line, string newMode)
+   /if (${newMode.Upper.Equal[ON]}) {
+      /varset autoMez TRUE
+      /echo Automez is now ON
+   } else /if (${newMode.Upper.Equal[OFF]}) {
+      /varset autoMez FALSE
+      /echo Automez is now OFF
+   }
+
+/RETURN 
