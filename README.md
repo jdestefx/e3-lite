@@ -3,43 +3,44 @@ e3-lite is an adaptation of the original "killians e3 macro".
 
 To use, just run /mac e3.  The first time you execute the macro, a basic INI will be created.  Below explains all the areas and what you can do with them.
 
+```
 INI SECTIONS
 
 [Misc]
-EQBC Channels=team casters ranged					; Channels to be automatically assigned to upon macro start.
-Tell Relay=/bc <who> told me <msg>					; Command to perform whenever a tell is received. <who> and <msg> are replaced with actual values.
-AcceptBuffRequests=NO								; [YES|NO] Allow people to request buffs in [BuffRequests] section via tells.
-BuffRequestMinimumMana=30							; [% MANA] Must have this much mana before performing buff requests.
+EQBC Channels=team casters ranged			; Channels to be automatically assigned to upon macro start.
+Tell Relay=/bc <who> told me <msg>			; Command to perform whenever a tell is received. <who> and <msg> are replaced with actual values.
+AcceptBuffRequests=NO					; [YES|NO] Allow people to request buffs in [BuffRequests] section via tells.
+BuffRequestMinimumMana=30				; [% MANA] Must have this much mana before performing buff requests.
 
 [Assist]
-AutoDisarm=YES										; [YES/NO] Looks for traps within 75 units and attemps to automatically use "Disarm Traps" on it.
-													; Requires hard-coded traps names in e3_Assists.inc assist_Setup function to support trap names. 
-Auto-Assist=YES										; [YES/NO] Monitors other characters' combat activity and will automatically assist in killing.
-Melee=YES											; [YES/NO] Use melee-combat as a form of assisting. 
-Stick Point=BEHIND 									; (BEHIND, FRONT, ETC -- MQ2MOVEUTILS /STICK PARAMETERS) Where to stick to a mob when melee-assisting.
-													; Typically this will always be behind. For best results, bots used as tanks should not use BEHIND.
-Melee Distance=8									; (INT) Default stick distance when engaged in melee combat.
-Slay Index=99										; [INT] When slay mode is on, this control which mob to offtank. Read more about Slay mode below.
-SlayReferencePoint=Soandso							; [CHAR NAME] When slay mode is on, this character will be used as a reference point for determing offtank mobs. 
-BeneficialStrip=NONE 								; (ITEM/SPELL NAME) If a beneficial spell is detected on the assist target, this spell/item will be casted at it.
-													; Originally intended for monk-oow-robe clicking
-Tank=NO												; [YES/NO] Whether or not this character should behave as a tank.  Used in conjunction with [AggroAbilities] section.
-DontTakeAggroFrom=NONE								; (COMMA SEPARATED PC NAMES) A list of names of people to not take aggro from when tank logic is on.
-MaxAssistDistance=1000								; [INT] Distance to target at which assist calls will be ignored.
-OnSlayAssistCommand=NONE							; (COMMAND) A command to execute when a character shifts onto a slay target.  "/bc debuffs on !!{Target.ID}" is a useful one.
-													; Notice !! instead of $ for dynamic commands. 
-IgnoreAssistCalls=NO 								; (YES/NO) Provides a global mechanism to make a character ignore assist calls.
-MaintainAssistLOS=NO								; If LOS is lost during assist, attempt to /nav to the target.
-AcceptCharmCommands=NO								; [YES|NO] Toggle for responding to "e3 charm" commands
-CharmSpellName=NONE									; [SPELL NAME] The name of the Item or Spell to cast when trying to charm a mob.
-CharmDebuffs=NONE									; [SPELL NAME] Charm will not cast until these buffs/debuffs are seen on the target mob. (ie, "Tashanian,Snare")
-CharmBreakCommand=NONE								; [COMMAND] Provides a custom mechanism for performing a command when charm breaks. 
-													; Could be used to make other bots stun or taunt the mob so the bot can recahrm. 
-													; (ehg. /bct clerics //casting `stun command` -targetid|!!{Target.ID})
-AutoMez=NO											; [YES|NO] Toggle for automez logic.
-AutoMezSpell=NONE									; [SPELL NAME] Name of the mez to use for automez. 
+AutoDisarm=YES						; [YES/NO] Looks for traps within 75 units and attemps to automatically use "Disarm Traps" on it.
+							; Requires hard-coded traps names in e3_Assists.inc assist_Setup function to support trap names. 
+Auto-Assist=YES						; [YES/NO] Monitors other characters' combat activity and will automatically assist in killing.
+Melee=YES						; [YES/NO] Use melee-combat as a form of assisting. 
+Stick Point=BEHIND 					; (BEHIND, FRONT, ETC -- MQ2MOVEUTILS /STICK PARAMETERS) Where to stick to a mob when melee-assisting.
+							; Typically this will always be behind. For best results, bots used as tanks should not use BEHIND.
+Melee Distance=8					; (INT) Default stick distance when engaged in melee combat.
+Slay Index=99						; [INT] When slay mode is on, this control which mob to offtank. Read more about Slay mode below.
+SlayReferencePoint=Soandso				; [CHAR NAME] When slay mode is on, this character will be used as a reference point for determing offtank mobs. 
+BeneficialStrip=NONE 					; (ITEM/SPELL NAME) If a beneficial spell is detected on the assist target, this spell/item will be casted at it.
+							; Originally intended for monk-oow-robe clicking
+Tank=NO							; [YES/NO] Whether or not this character should behave as a tank.  Used in conjunction with [AggroAbilities] section.
+DontTakeAggroFrom=NONE					; (COMMA SEPARATED PC NAMES) A list of names of people to not take aggro from when tank logic is on.
+MaxAssistDistance=1000					; [INT] Distance to target at which assist calls will be ignored.
+OnSlayAssistCommand=NONE				; (COMMAND) A command to execute when a character shifts onto a slay target.  "/bc debuffs on !!{Target.ID}" is a useful one.
+							; Notice !! instead of $ for dynamic commands. 
+IgnoreAssistCalls=NO 					; (YES/NO) Provides a global mechanism to make a character ignore assist calls.
+MaintainAssistLOS=NO					; If LOS is lost during assist, attempt to /nav to the target.
+AcceptCharmCommands=NO					; [YES|NO] Toggle for responding to "e3 charm" commands
+CharmSpellName=NONE					; [SPELL NAME] The name of the Item or Spell to cast when trying to charm a mob.
+CharmDebuffs=NONE					; [SPELL NAME] Charm will not cast until these buffs/debuffs are seen on the target mob. (ie, "Tashanian,Snare")
+CharmBreakCommand=NONE					; [COMMAND] Provides a custom mechanism for performing a command when charm breaks. 
+							; Could be used to make other bots stun or taunt the mob so the bot can recahrm. 
+							; (ehg. /bct clerics //casting `stun command` -targetid|!!{Target.ID})
+AutoMez=NO						; [YES|NO] Toggle for automez logic.
+AutoMezSpell=NONE					; [SPELL NAME] Name of the mez to use for automez. 
 AutoMezSpawnSearch=npc radius 50 los range 1 60		; [SPAWN SEARCH] The spawn search criteria for identifying mobs to automez.
-AutoMezTimerMarginSeconds=10						; [INT] Adjust re-mez time by adding margin here. Use seconds (without "s" at the end).
+AutoMezTimerMarginSeconds=10				; [INT] Adjust re-mez time by adding margin here. Use seconds (without "s" at the end).
 
 
 Details about "slay" mode:
