@@ -433,8 +433,6 @@ SUB processBuffs
             /vardata buffSpawn Spawn[pc ${targetNames.Token[1,|]}]
          }
       }
-      /echo e3_Cast ${buffSpawn.ID} "${buffCastName}"
-
 
       /if (${buffSpawn.ID}==NULL) /continue
 

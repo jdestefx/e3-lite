@@ -54,11 +54,6 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 	/if (${Macro.Return.Equal[UNKNOWN]}) /return UNKNOWN
 	/vardata castSpell ${Macro.Return}
 
-	| IF THE SPELL NEEDS MANA, SEE IF WE HAVE ENOUGH
-	/if (${castSpell.Mana} > 0) {
-		/if (${Math.Calc[${Me.CurrentMana}]} < ${castSpell.Mana}) /return OOM
-	}
-
 	| IF IM NOT THE TARGET SEE IF THE TARGET IS IN RANGE
 	/if (${targetID} != NULL && ${targetID} != ${Me.ID} && ${castSpell.MyRange}>0 && ${Spawn[id ${targetID}].Distance3D} > ${castSpell.MyRange}) /return DISTANCE
 
@@ -67,8 +62,14 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 
 	| DETERMINE THE SPELL ORIGIN (CAST TYPE) FOR FURTHER HANDLING
 	/call e3_getCastTypeByCastRequest "${castName}"
+
 	/if (${Macro.Return.Equal[UNKNOWN]}) /return UNKNOWN
 	/varset castType ${Macro.Return}
+
+	| IF THE SPELL IS NOT AN ITEM CLICK AND NEEDS MANA, SEE IF WE HAVE ENOUGH
+	/if (${castType.NotEqual[ITEM]} && ${castSpell.Mana} > 0) {
+		/if (${Math.Calc[${Me.CurrentMana}]} < ${castSpell.Mana}) /return OOM
+	}
 
 	/if (${castType.Equal[ITEM]}) {
 		/varset castItemName ${FindItem[${castName}].Spell.Name}
