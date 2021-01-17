@@ -203,6 +203,9 @@ SUB processBuffs
       }
 
       | QUICK/EASY CHECKS FIRST...
+      /if (${iniBuffs[${i},${bRequireCastIdle}].NotEqual[-]}) {
+         /if (${assistTarget}==0) /continue
+      }
       /if (${iniBuffs[${i},${bRequireAssistTarget}].NotEqual[-]}) {
          /if (${assistTarget}==0) /continue
       }

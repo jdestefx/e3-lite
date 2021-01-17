@@ -618,7 +618,6 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
    /declare maxResists int local 5
    /declare currentResistCount int local 0
 
-
    /for i 1 to ${${processArray}.Size}
       /varset assistSpellName ${${processArray}[${i},1]}
       /varset assistTimerValue 0

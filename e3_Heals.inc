@@ -175,6 +175,10 @@ SUB checkHeals
 		/varset healSpellName ${iniHeals[${i},1]}
 		/varset healLockoutTimerName heal_${healSpawn.ID}_${healSpellName}
 
+		/if (${iniHeals[${i},${bRequireCastIdle}].NotEqual[-]}) {
+			/if (${idleCastingTimer}>0) /continue
+		}
+
 		/if (${iniHeals[${i},${bCastableOnlyResting}].NotEqual[-]}) {
 			/if (${Me.CombatState.Equal[COMBAT]}) /goto :loopnexti
 		}
