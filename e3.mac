@@ -75,9 +75,6 @@ SUB Main(modeSelect)
 			/attack off
 		}
 
-		| SCAN NETBOTS TO SEE IF ANYONE IS IN ACTIVE COMBAT. SET A TIMER IF SO.
-		/call check_Combat
-
 		| CALL INCLUDED FEATURES
 		/call heal_Background_Events
 		/call assist_Background_Events

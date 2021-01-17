@@ -1,27 +1,27 @@
 | MANAGES MELEE ASSISTING, DEBUFFS, NUKES
 
-SUB assist_CharacterSettings(bool backFill)   
-   /call WriteToIni "${iniFileCharacter},Assist,Auto-Assist" YES ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,Stick Point" BEHIND ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,Melee" YES ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,Melee Distance" 8 ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,Slay Index" 99 ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,SlayReferencePoint" ${Me.CleanName} ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,BeneficialStrip" NONE ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,Tank" NO ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,DontTakeAggroFrom" NONE ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,OnSlayAssistCommand" NONE ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,MaxAssistDistance" 1000 ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,IgnoreAssistCalls" NO ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,MaintainAssistLOS" YES ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,AcceptCharmCommands" NO ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,CharmSpellName" NONE ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,CharmDebuffs" NONE ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,CharmBreakCommand" NONE ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,AutoMez" NO ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,AutoMezSpell" ENTRANCE ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,AutoMezSpawnSearch" "radius 50 los range 1 10" ${backFill}
-   /call WriteToIni "${iniFileCharacter},Assist,AutoMezTimerMarginSeconds" 10 ${backFill}
+SUB assist_CharacterSettings(bool backFillOnly)   
+   /call WriteToIni "${iniFileCharacter},Assist,Auto-Assist" YES ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,Stick Point" BEHIND ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,Melee" YES ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,Melee Distance" 8 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,Slay Index" 99 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,SlayReferencePoint" ${Me.CleanName} ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,BeneficialStrip" NONE ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,Tank" NO ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,DontTakeAggroFrom" NONE ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,OnSlayAssistCommand" NONE ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,MaxAssistDistance" 1000 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,IgnoreAssistCalls" NO ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,MaintainAssistLOS" YES ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AcceptCharmCommands" NO ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,CharmSpellName" NONE ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,CharmDebuffs" NONE ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,CharmBreakCommand" NONE ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoMez" NO ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoMezSpell" ENTRANCE ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoMezSpawnSearch" "radius 50 los range 1 10" ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoMezTimerMarginSeconds" 10 ${backFillOnly}
 /RETURN
 
 Sub assist_Setup
@@ -29,9 +29,10 @@ Sub assist_Setup
    /declare burnsActive bool outer FALSE
    /declare burnCheckTimer timer outer 0
 
+   /declare combatTimer timer outer
+   /declare combatDelay int outer 100
    /declare assistQueue string outer 
    /declare autoAbilitiesCheckTimer timer outer
-   /declare assisting bool outer FALSE
    /declare assistTarget int outer 0
    /declare checkAssistSpellsTimer timer outer 0
    /declare allowControl bool outer FALSE
@@ -474,7 +475,6 @@ SUB check_AssistStatus
       } else {
          /call setAssistOff
       }
-      
       /RETURN
    }
 
@@ -536,7 +536,6 @@ SUB checkAssistQueue
       }
 
       /varset assistQueue ${assistQueue.Replace[${id}|,]}
-      /ECHO NEW AQ: ${assistQueue}
    }
 /RETURN
 
@@ -627,57 +626,57 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
       /varset assistTimerValue 0
       /varset currentResistCount 0
 
-      /if (${assistSpellName.Equal[-]}) /goto :loopend
+      /if (${assistSpellName.Equal[-]}) /break
 
       /if (${${processArray}[${i},${bMaxResists}].NotEqual[-]}) {
          /varset maxResists ${${processArray}[${i},${bMaxResists}]}
       }
 
       /if (${${processArray}[${i},${bSelfOverMana}].NotEqual[-]}) {
-         /if (${Me.PctMana} <= ${${processArray}[${i},${bSelfOverMana}]}) /goto :loopnexti
+         /if (${Me.PctMana} <= ${${processArray}[${i},${bSelfOverMana}]}) /continue
       }
 
       /if (${${processArray}[${i},${bSelfUnderMana}].NotEqual[-]}) {
-         /if (${Me.PctMana} >= ${${processArray}[${i},${bSelfUnderMana}]}) /goto :loopnexti
+         /if (${Me.PctMana} >= ${${processArray}[${i},${bSelfUnderMana}]}) /continue
       }
 
       /if (${${processArray}[${i},${bSelfUnderEnd}].NotEqual[-]}) {
-         /if (${Me.PctEndurance} >= ${${processArray}[${i},${bSelfUnderEnd}]} ) /goto :loopnexti
+         /if (${Me.PctEndurance} >= ${${processArray}[${i},${bSelfUnderEnd}]} ) /continue
       }
       /if (${${processArray}[${i},${bSelfOverEnd}].NotEqual[-]}) {
-         /if (${Me.PctEndurance} < ${${processArray}[${i},${bSelfOverEnd}]} ) /goto :loopnexti
+         /if (${Me.PctEndurance} < ${${processArray}[${i},${bSelfOverEnd}]} ) /continue
       }
 
       /if (${${processArray}[${i},${bTargetOverLevel}].NotEqual[-]}) {
-         /if (${Spawn[id ${assistTarget}].Level} < ${${processArray}[${i},${bTargetOverLevel}]}) /goto :loopnexti
+         /if (${Spawn[id ${assistTarget}].Level} < ${${processArray}[${i},${bTargetOverLevel}]}) /continue
       }
 
       /if (${${processArray}[${i},${bTargetUnderLevel}].NotEqual[-]}) {
-         /if (${Spawn[id ${assistTarget}].Level} >= ${${processArray}[${i},${bTargetUnderLevel}]}) /goto :loopnexti
+         /if (${Spawn[id ${assistTarget}].Level} >= ${${processArray}[${i},${bTargetUnderLevel}]}) /continue
       }
 
       /if (${${processArray}[${i},${bRequireBodyType}].NotEqual[-]}) {
-         /if (${Select[${Spawn[id ${assistTarget}].Body.Name},${${processArray}[${i},${bRequireBodyType}]}]}==0) /goto :loopnexti
+         /if (${Select[${Spawn[id ${assistTarget}].Body.Name},${${processArray}[${i},${bRequireBodyType}]}]}==0) /continue
       }
 
       /if (${${processArray}[${i},${bTargetRace}].NotEqual[-]}) {
-         /if (${Select[${Spawn[id ${assistTarget}].Race},${${processArray}[${i},${bTargetRace}]}]}==0) /goto :loopnexti
+         /if (${Select[${Spawn[id ${assistTarget}].Race},${${processArray}[${i},${bTargetRace}]}]}==0) /continue
       }
 
       /if (${${processArray}[${i},${bRequireMobsInProximity}].NotEqual[-]}) {
-         /if (${SpawnCount[npc loc ${Me.X} ${Me.Y} radius 25]} < ${${processArray}[${i},${bRequireMobsInProximity}]}) /goto :loopnexti
+         /if (${SpawnCount[npc loc ${Me.X} ${Me.Y} radius 25]} < ${${processArray}[${i},${bRequireMobsInProximity}]}) /continue
       }
 
       /if (${${processArray}[${i},${bRequireMaxMobsInProximity}].NotEqual[-]}) {
-         /if (${SpawnCount[npc loc ${Me.X} ${Me.Y} radius 45]} > ${${processArray}[${i},${bRequireMaxMobsInProximity}]}) /goto :loopnexti
+         /if (${SpawnCount[npc loc ${Me.X} ${Me.Y} radius 45]} > ${${processArray}[${i},${bRequireMaxMobsInProximity}]}) /continue
       }
 
       /if (${${processArray}[${i},${bRequireTargetClass}].NotEqual[-]}) {
-         /if (${Select[${Spawn[id ${assistTarget}].Class.ShortName},${${processArray}[${i},${bRequireTargetClass}]}]}==0) /goto :loopnexti
+         /if (${Select[${Spawn[id ${assistTarget}].Class.ShortName},${${processArray}[${i},${bRequireTargetClass}]}]}==0) /continue
       }
 
       /if (${${processArray}[${i},${bRequireNoActiveDisc}].NotEqual[-]}) {
-         /if (${Me.ActiveDisc.ID}!=NULL) /goto :loopnexti
+         /if (${Me.ActiveDisc.ID}!=NULL) /continue
       }
 
       | CHECKS AFTER HERE REQUIRE TARGET REFRESH
@@ -687,11 +686,11 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
       }
 
       /if (${${processArray}[${i},${bTargetOverHP}].NotEqual[-]}) {
-         /if (${Target.PctHPs} < ${${processArray}[${i},${bTargetOverHP}]}) /goto :loopnexti
+         /if (${Target.PctHPs} < ${${processArray}[${i},${bTargetOverHP}]}) /continue
       }
 
       /if (${${processArray}[${i},${bTargetUnderHP}].NotEqual[-]}) {
-         /if (${Target.PctHPs} >= ${${processArray}[${i},${bTargetUnderHP}]}) /goto :loopnexti
+         /if (${Target.PctHPs} >= ${${processArray}[${i},${bTargetUnderHP}]}) /continue
       }
 
 
@@ -700,7 +699,7 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
 
       /if (${Macro.Return.Equal[UNKNOWN]}) {
          /echo unknown spell: ${assistSpellName} 
-         /goto :loopnexti
+         /continue
       }
       /vardata assistSpell ${Macro.Return}
 
@@ -710,7 +709,7 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
 
       | TIMER FOR THIS? SKIP...
       /if (${Defined[${assistTimerName}]}==TRUE) {
-         /if (${${assistTimerName}}>0) /goto :loopnexti
+         /if (${${assistTimerName}}>0) /continue
          /deletevar ${assistTimerName}
       }
 
@@ -725,12 +724,10 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
       /call e3_cast ${assistTarget} "${assistSpellName}" "TargetDead"
       /varset castResult ${Macro.Return}
 
-
       /if (${castResult.Equal[CAST_NOTAKEHOLD]}) {
          /ECHO created timer: ${assistTimerName}
          /declare ${assistTimerName} timer outer 120
       } else /if (${castResult.Equal[CAST_SUCCESS]}) {
-
          | handle medbreak pause
          /if (${${processArray}[${i},${bNoSitTimer}].NotEqual[-]}) {
             /call pauseMedBreak ${${processArray}[${i},${bNoSitTimer}]}
@@ -752,7 +749,7 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
          }
 
          /varset actionTaken TRUE
-         /if (${stopAfterActionTaken}==TRUE) /goto :loopend
+         /if (${stopAfterActionTaken}==TRUE) /break
       } else /if (${castResult.Equal[CAST_RESIST]}) {
          /delay 20
          /varset currentResistCount ${Math.Calc[${currentResistCount}+1]}
@@ -766,13 +763,9 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
          }
 
       }
-
-
-
-
-      :loopnexti
+   
    /next i
-   :loopend
+
 /RETURN
 
 

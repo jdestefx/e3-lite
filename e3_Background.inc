@@ -7,9 +7,6 @@ Sub background_Setup
    | TODO ELIMINATE
    /declare spamTimer timer outer
 
-   /declare combatTimer timer outer
-   /declare combatDelay int outer 50
-
    | INI SETTINGS
    /declare eqbcsChannels string outer team
    /declare tellRelay string outer -
@@ -24,7 +21,7 @@ Sub background_Setup
 
 Sub check_Scatter
    /return
-   /if (${Following}==TRUE || ${assisting}==TRUE || ${MoveTo.Moving}==TRUE) /return
+   /if (${Following}==TRUE || ${MoveTo.Moving}==TRUE) /return
 
    /declare currentX int local 
    /declare currentY int local 
@@ -43,7 +40,7 @@ Sub check_Scatter
 
       :tryAgain
       | IN CASE NEW ORDERS WERE GIVEN
-      /if (${Following}==TRUE || ${assisting}==TRUE) /return
+      /if (${Following}==TRUE) /return
 
       /varset currentX ${Me.X}
       /varset currentY ${Me.Y}
@@ -76,22 +73,22 @@ SUB check_Combat
    /declare i int local
    /declare botName string local
 
+   /if (${Me.Combat}==TRUE) {
+      /varset combatTimer ${combatDelay}
+      /return
+   }
+
    /for i 1 to ${NetBots.Counts}
       /varset botName ${NetBots.Client[${i}]}
 
       /if (${NetBots[${botName}].Attacking} == TRUE) {
-         /if (${NetBots[${botName}].Zone} != ${Zone.ID}) /goto :loopnext
-         /if (${Spawn[pc ${botName}].Distance} > ${maxAssistDistance}) /goto :loopnext
+         /if (${NetBots[${botName}].Zone} != ${Zone.ID}) /continue
+         /if (${Spawn[pc ${botName}].Distance} > ${maxAssistDistance}) /continue
 
          /varset combatTimer ${combatDelay}
          /return
       }
 
-      /if (${Me.Combat}==TRUE || ${assisting}==TRUE) {
-         /varset combatTimer ${combatDelay}
-         /return
-      }
-      :loopnext
    /next i
 /RETURN
 

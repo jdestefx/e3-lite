@@ -120,6 +120,7 @@ SUB e3_Setup(modeSelect)
    /declare bMemInGem string outer 57
    /declare bXTargetOnlyHeal string outer 58
    /declare bTargetType string outer 59
+   /declare bRequireIdleCasting string outer 60
 
    |/declare autoKeywordIndex int outer 22
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE

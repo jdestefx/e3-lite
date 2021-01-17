@@ -1,5 +1,6 @@
 Sub casting_Setup
-	/declare currentNetNote string outer .
+	/declare idleCastingTimer timer outer 
+
 /return
 
 Sub casting_Background_Events
@@ -34,7 +35,7 @@ SUB e3_getSpellByCastRequestName(string castRequest)
    /RETURN UNKNOWN
 /RETURN
 
-SUB e3_Cast(int targetID, string castName, string cancelConditions)
+SUB e3_Cast(int targetID, string castName, string cancelConditions, bool ignoreIdleCastTimer)
 	/declare maxFizzle int local 3
 	/declare fizzleCount int local 0
 	/declare castType string local
@@ -48,6 +49,7 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 	/declare startPos string local ${Me.Y},${Me.X},${Me.Z}
 	/declare precastWatchTimer timer local 
 	/declare castItemName string local 
+	/declare combatTimerValue int local
 
 	| RESOLVE A SPELL OBJECT BASED ON THE REQUESTED CAST NAME
 	/call e3_getSpellByCastRequestName "${castName}"
@@ -94,11 +96,13 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 
 	:castStart
 
+	| PRESERVE COMBAT TIMER VALUE SO IT DOESN'T EXPIRE JUST BECAUSE BOT WAS CASTING
+	/varset combatTimerValue ${combatTimer}
+
 	/if (${castSpell.TargetType.NotEqual[SELF]} && ${Target.ID} != ${targetID}) {
 		/tar id ${targetID}
 		/delay 1
 	}
-
 
 	/bc Casting [${castName}] => ${Target.Name}
 	
@@ -154,12 +158,19 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 	| MANDATORY PAUSE HERE BECAUSE CAST.RESULT NEEDS TO DETECT THE OUTCOME
 	/delay 5
 
+	| RESET COMBATTIMER TO WHAT IT WAS BEFORE CAST START
+	/if (${combatTimerValue}>0) /varset combatTimer ${combatDelay}
+
 	/echo CastResult: ${Cast.Result}
+
+	/if (${ignoreIdleCastTimer}==FALSE) {
+		/varset idleCastingTimer 50
+	}
 
 	/if (${Cast.Result.Equal[CAST_FIZZLE]}) {
 		/varset fizzleCount ${Math.Calc[${fizzleCount}+1]}
 		/if (${fizzleCount} <= ${maxFizzle}) /goto :castStart
-	}	
+	}
 
 	/if (${Select[${Cast.Result},CAST_RESIST,CAST_SUCCESS,CAST_INTERRUPTED,CAST_CANCELLED]}>0) {
 		/return ${Cast.Result}

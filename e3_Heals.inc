@@ -161,11 +161,13 @@ SUB checkHeals
 	/declare useHealIndex bool local FALSE
 	/declare checkSpellID int local
 	/declare healLockoutTimerName string local
+	/declare triggerIdleCasting bool local TRUE
 
 	/declare botBuffIDs string local 
 
 	/for i 1 to ${iniHeals.Size}
 		/if (${Stick.Active}==TRUE) /goto :loopend
+		/varset triggerIdleCasting TRUE
 		/varset botBuffIDs
 		/varset healEntry ${iniHeals[${i},1]}
 		/if (${healEntry.Equal[-]}) /goto :loopend
@@ -264,7 +266,12 @@ SUB checkHeals
 			}
 		}
 
-		/call e3_Cast ${healSpawn.ID} "${healEntry}" "${cancelConditions}"
+		/if (${iniHeals[${i},${bRequireIdleCasting}].NotEqual[-]}) {
+			/if (${idleCastingTimer}>0) /return
+			/varset triggerIdleCasting FALSE
+		}
+
+		/call e3_Cast ${healSpawn.ID} "${healEntry}" "${cancelConditions}" ${triggerIdleCasting}
 
 		/if (${Macro.Return.Equal[CAST_SUCCESS]}) {
 			/if (${iniHeals[${i},${bRecastDelay}].NotEqual[-]}) {
