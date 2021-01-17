@@ -556,7 +556,6 @@ SUB setAssistOff
    /varset autoAssistHoldTimer 1s
 /RETURN
 
-
 | SEE IF I SHOULD AUTO-ASSIST SOMETHING THAT A FELLOW NETBOT IS ATTACKING
 SUB check_AutoAssist
    /if (${autoAssist}==FALSE) /return
@@ -586,7 +585,6 @@ SUB check_AutoAssist
    :loopesc
 
    /if (${targetID}!=0) /call setAssistOn ${targetID}
-
 /RETURN
 
 SUB check_Dispell
@@ -625,8 +623,13 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
       /varset assistSpellName ${${processArray}[${i},1]}
       /varset assistTimerValue 0
       /varset currentResistCount 0
+      /varset maxResists 5
 
       /if (${assistSpellName.Equal[-]}) /break
+
+      /if (${${processArray}[${i},${bRequireCastIdle}].NotEqual[-]}) {
+         /if (${idleCastingTimer}>0) /continue
+      }
 
       /if (${${processArray}[${i},${bMaxResists}].NotEqual[-]}) {
          /varset maxResists ${${processArray}[${i},${bMaxResists}]}
@@ -765,10 +768,7 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
       }
    
    /next i
-
 /RETURN
-
-
 
 SUB checkDebuffs
    /declare targetEntry string local

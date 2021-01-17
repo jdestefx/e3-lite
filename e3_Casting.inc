@@ -1,16 +1,14 @@
 Sub casting_Setup
-	/declare idleCastingTimer timer outer 
+	/declare idleCastingTimer timer outer
+	/declare idleCastingTimerDelay int outer 40
 
 /return
 
 Sub casting_Background_Events
 /return
 
-
-
 SUB casting_MacroSettings
 /RETURN
-
 
 SUB casting_CharacterSettings
 /RETURN
@@ -35,7 +33,7 @@ SUB e3_getSpellByCastRequestName(string castRequest)
    /RETURN UNKNOWN
 /RETURN
 
-SUB e3_Cast(int targetID, string castName, string cancelConditions, bool ignoreIdleCastTimer)
+SUB e3_Cast(int targetID, string castName, string cancelConditions)
 	/declare maxFizzle int local 3
 	/declare fizzleCount int local 0
 	/declare castType string local
@@ -118,7 +116,6 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, bool ignoreI
 		/doevents
 	}
 
-
 	/while (${Cast.Status.Find[C]}!=NULL) {
 		/if (${castType.Equal[ITEM]} && ${Cast.Effect.Name.NotEqual[${castItemName}]}) /break
 		/doevents
@@ -155,6 +152,8 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, bool ignoreI
 		}
 	}
 
+	/varset idleCastingTimer ${idleCastingTimerDelay}
+
 	| MANDATORY PAUSE HERE BECAUSE CAST.RESULT NEEDS TO DETECT THE OUTCOME
 	/delay 5
 
@@ -162,10 +161,6 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, bool ignoreI
 	/if (${combatTimerValue}>0) /varset combatTimer ${combatDelay}
 
 	/echo CastResult: ${Cast.Result}
-
-	/if (${ignoreIdleCastTimer}==FALSE) {
-		/varset idleCastingTimer 50
-	}
 
 	/if (${Cast.Result.Equal[CAST_FIZZLE]}) {
 		/varset fizzleCount ${Math.Calc[${fizzleCount}+1]}

@@ -137,7 +137,6 @@ SUB checkBuffRequestQueue
       /return
    }
 
-
    /for i 1 to ${Math[${buffQueue.Count[;]}+1]}
       /varset e ${buffQueue.Token[${i},;]}
       
