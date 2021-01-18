@@ -203,8 +203,10 @@ SUB processBuffs
       }
 
       | QUICK/EASY CHECKS FIRST...
+      /echo ${iniBuffs[${i},1]} ${iniBuffs[${i},${bRequireCastIdle}]}
+
       /if (${iniBuffs[${i},${bRequireCastIdle}].NotEqual[-]}) {
-         /if (${assistTarget}==0) /continue
+         /if (${idleCastingTimer}>0) /continue
       }
       /if (${iniBuffs[${i},${bRequireAssistTarget}].NotEqual[-]}) {
          /if (${assistTarget}==0) /continue
