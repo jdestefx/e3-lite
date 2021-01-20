@@ -764,6 +764,10 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
             /declare ${assistTimerName} timer outer 5m
          }
 
+      } else /if (${castResult.Equal[CAST_IMMUNE]}) {
+         /bc Immune.  Giving up...
+         /g Giving up casting ${assistSpellName} on ${assistTarget}, target is immune.
+         /call lockout ${assistTimerName} 5m
       }
    
    /next i
@@ -994,14 +998,14 @@ SUB processDebuffsForTargetID(int targetID)
       /if (${currentResistCount}==${maxResists}) {
          /bc My spell was resisted too much.  Giving up...
          /em gives up casting ${castName} on ${Spawn[id ${targetID}].CleanName}, too many resists.
-         /declare ${timerName} timer outer 5m         
+         /call lockout ${timerName} 5m         
       }
 
       | If the spell did not take hold.
       /if (${debuffResult.Equal[CAST_NOTAKEHOLD]} || ${debuffResult.Equal[CAST_IMMUNE]} || ${debuffResult.Equal[CAST_TAKEHOLD]}) {
          /g My spell didn't take hold, or target was immune: ${castName} on ${Spawn[id ${targetID}].CleanName}
          /em gives up casting ${castName} on ${Spawn[id ${targetID}].CleanName}, didn't take hold, or target was immune.
-         /declare ${timerName} timer outer 5m
+         /call lockout ${timerName} 5m
       }
 
       | UNKNOWN? skip
