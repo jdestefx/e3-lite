@@ -144,7 +144,7 @@ SUB checkHeals
 	/if (${Me.Moving}==TRUE) /RETURN
 	/if (${iniHeals.Size}==0) /RETURN
 	/if (${Stick.Active}==TRUE) /RETURN
-	/if (${Me.Silenced.ID}!=NULL) /RETURN
+	| REMOVED FOR PEQ | /if (${Me.Silenced.ID}!=NULL) /RETURN
 	/if (${Me.Invis}==TRUE) /RETURN
 
 	/if (${healerCheckTimer}>0) /RETURN
