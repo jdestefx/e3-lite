@@ -158,7 +158,7 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 	/varset idleCastingTimer ${idleCastingTimerDelay}
 
 	| MANDATORY PAUSE HERE BECAUSE CAST.RESULT NEEDS TO DETECT THE OUTCOME
-	/delay 5
+	/delay 10
 
 	| RESET COMBATTIMER TO WHAT IT WAS BEFORE CAST START
 	/if (${combatTimerValue}>0) /varset combatTimer ${combatDelay}
