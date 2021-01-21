@@ -18,7 +18,13 @@
 #turbo 99
 #include e3_Setup.inc
 
-SUB Main(modeSelect)
+SUB Main()
+	/declare iniSuffix string local
+
+	/if (${Defined[Param0]}==TRUE && ${Param0.Length}>0) {
+		/varset iniSuffix -${Param0}
+	}
+
 	/if (${Me.Dead}==TRUE || ${Me.State.Equal[HOVER]}) {
 	   /call quit "Can't launch while dead."
 	}
@@ -38,7 +44,7 @@ SUB Main(modeSelect)
 
 
 	/declare i int local
-	/call e3_Setup "${modeSelect}"
+	/call e3_Setup "${iniSuffix}"
 
 	/moveto dist 10
 

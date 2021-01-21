@@ -25,11 +25,8 @@
 #include e3_Classes_Wizard.inc
 
 
-SUB e3_Setup(modeSelect)
-   /declare macroVersion string outer 1.0(LIVE)
-   /declare iniFileGeneralSettings string outer e3_general.ini
-   /declare iniFileCharacter string outer e3_bots\${MacroQuest.Server}-${Me.CleanName}.ini
-   /declare chatOutputChannel string outer
+SUB e3_Setup(string iniSuffix)
+   /declare iniFileCharacter string outer e3_bots\${MacroQuest.Server}-${Me.CleanName}${iniSuffix}.ini
 
    /declare manaClasses string outer CLR,DRU,ENC,PAL,BRD,WIZ,MAG,SHM,NEC,BST,SHD
    /declare manaRegenClasses string outer CLR,DRU,ENC,PAL,WIZ,MAG,SHM,BST,SHD
@@ -121,6 +118,7 @@ SUB e3_Setup(modeSelect)
    /declare bXTargetOnlyHeal string outer 58
    /declare bTargetType string outer 59
    /declare bRequireCastIdle string outer 60
+   /declare bOnlyAfterTaunt string outer 61
 
    |/declare autoKeywordIndex int outer 22
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE
@@ -137,8 +135,6 @@ SUB e3_Setup(modeSelect)
    /if (${Bool[${Ini[${iniFileCharacter}]}]}==FALSE) /call makeCharSettingsIniFile
 
    /call check_Plugins
-   /call getIniToVar "${iniFileGeneralSettings},General,Macro Output Channel" chatOutputChannel "/bc"
-
 
    | RUN CLASS SETUP
    /call ${Me.Class.ShortName}_setup

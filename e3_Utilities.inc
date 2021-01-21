@@ -117,7 +117,6 @@ SUB IniToArray(Ini_Key, ArrayName, ArrayScope)
 /RETURN ${ArrayName}
 
 SUB WriteToIni(string iniFile, string writeContents, bool backFillOnly)
-	/echo BF:${backFillOnly} ${Ini[${iniFile}]}
 	/if (${backFillOnly}==TRUE) {
 		/if (${Ini[${iniFile}].Length}==NULL) {
 			/ECHO "${iniFile.Arg[1,,]}" "${iniFile.Arg[2,,]}" "${iniFile.Arg[3,,]}" "${writeContents}"
@@ -125,9 +124,7 @@ SUB WriteToIni(string iniFile, string writeContents, bool backFillOnly)
 		}
 		/return
 	}
-
 	/ini "${iniFile.Arg[1,,]}" "${iniFile.Arg[2,,]}" "${iniFile.Arg[3,,]}" "${writeContents}"
-
 /RETURN
 
 SUB WriteToIniAppend(iniParams, appendVal, joiner)
