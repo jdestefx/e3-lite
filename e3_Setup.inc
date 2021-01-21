@@ -118,6 +118,7 @@ SUB e3_Setup(string iniSuffix)
    /declare bXTargetOnlyHeal string outer 58
    /declare bTargetType string outer 59
    /declare bRequireCastIdle string outer 60
+   /declare bOnlyAfterTaunt string outer 61
 
    |/declare autoKeywordIndex int outer 22
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE

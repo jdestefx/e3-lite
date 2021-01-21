@@ -79,6 +79,7 @@ Sub assist_Setup
    /declare autoMezSpawnSearch string outer NONE
    /declare autoMezTimerMarginSeconds string outer 10
    /declare autoMezCheckTimer timer outer 0
+   /declare tauntSuccessList list outer 
 
    /declare joustEnabled bool outer FALSE
    /declare joustInTrigger string outer -
@@ -160,6 +161,7 @@ Sub assist_Background_Events
 
    | CHECK TANK ACTIONS
    /if (${tankMode}==TRUE && ${tankCheckTimer}==0) {
+      /call checkTauntSuccessList
       /call checkTankStatus
       /varset tankCheckTimer 5
    }
@@ -182,6 +184,22 @@ Sub assist_Background_Events
    /if (${canDoDebuffs}==TRUE && ${Me.Moving}==FALSE && ${debuffTargetIDs.Length}>0) /call checkDebuffs
    /if (${beneficialStrip.NotEqual[NONE]} && ${doBeneficialStrip}==TRUE) /call check_Dispell
 /return
+
+SUB checkTauntSuccessList
+   /if (${tauntSuccessList.Count}==0) /return
+
+   /declare i int local 
+   /declare t int local
+
+   /for i ${Math.Calc[${tauntSuccessList.Count}-1]} downto 0
+      /varset t ${tauntSuccessList.Item[${i}].Token[2,_]}
+
+      /if (${Math.Calc[${MacroQuest.Running} - ${t} >5000]}) {
+         /invoke ${tauntSuccessList.Erase[${i}]}
+      }  
+
+   /next i
+/RETURN
 
 SUB checkAutoMez
    /if (${autoMezCheckTimer}>0) /return
@@ -340,6 +358,16 @@ SUB checkTankStatus
 
       /if (${iniAggroAbilities[${i},${bNotToT}].NotEqual[-]}) {
          /if (${Me.TargetOfTarget.ID}==${Me.ID}) /goto :loopnexti
+      }
+
+      /if (${iniAggroAbilities[${i},${bAmToT}].NotEqual[-]}) {
+         /if (${Me.TargetOfTarget.ID}!=${Me.ID}) /goto :loopnexti
+      }
+
+      /if (${iniAggroAbilities[${i},${bOnlyAfterTaunt}].NotEqual[-]}) {
+         /if (${tauntSuccessList.Contains[${assistTarget}_]}==-1) {
+            /goto :loopnexti
+         }
       }
 
       /if (${iniAggroAbilities[${i},${bDoAbility}].NotEqual[-]}) {
@@ -1258,3 +1286,12 @@ SUB EVENT_toggleAutomez(string line, string newMode)
 
 /RETURN 
 
+
+
+#event tauntSuccess "You capture #*# attention!"
+#event tauntSuccess "You capture #*# with your unparalleled reproach!"
+SUB EVENT_tauntSuccess(string line, string newMode)
+   /if (${Target.ID}==NULL) /return
+   
+   /invoke ${tauntSuccessList.Append[${Target.ID}_${MacroQuest.Running}]}
+/RETURN
