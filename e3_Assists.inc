@@ -727,7 +727,6 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
       /varset castResult ${Macro.Return}
 
       /if (${castResult.Equal[CAST_NOTAKEHOLD]}) {
-         /ECHO created timer: ${assistTimerName}
          /declare ${assistTimerName} timer outer 120
       } else /if (${castResult.Equal[CAST_SUCCESS]}) {
          | handle medbreak pause
@@ -736,7 +735,6 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
          }
 
          /if (${${processArray}[${i},${bRecastDelay}].NotEqual[-]} || ${assistSpell.Duration.TotalSeconds} > 0) {
-            /ECHO created timer: ${assistTimerName}
             /declare ${assistTimerName} timer outer 0
 
             /if (${${processArray}[${i},${bRecastDelay}].NotEqual[-]}) {
@@ -746,8 +744,6 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
             /if (${assistSpell.Duration.TotalSeconds}>0) {
                /varset ${assistTimerName} ${Math.Calc[${${assistTimerName}} + ${assistSpell.Duration.TotalSeconds}]}s
             }
-
-            /echo timerval: ${${assistTimerName}}
          }
 
          /varset actionTaken TRUE
@@ -763,7 +759,6 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
             /g Giving up casting ${assistSpellName} on ${assistTarget}, too many resists.
             /declare ${assistTimerName} timer outer 5m
          }
-
       }
    
    /next i

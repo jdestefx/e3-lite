@@ -115,7 +115,7 @@ SUB deactivateMeditateMode
       /return
    }
 
-   /docommand ${chatOutputChannel} Ending Medbreak.
+   /bc Ending Medbreak.
    /varset meditateOn FALSE
    /if (${Me.Sitting}) /stand
 /RETURN

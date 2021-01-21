@@ -49,6 +49,9 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 	/declare castItemName string local 
 	/declare combatTimerValue int local
 
+	| SILENCED? BAIL
+	/if (${Me.Silenced.ID}!=NULL) /return SILENCED
+
 	| RESOLVE A SPELL OBJECT BASED ON THE REQUESTED CAST NAME
 	/call e3_getSpellByCastRequestName "${castName}"
 	/if (${Macro.Return.Equal[UNKNOWN]}) /return UNKNOWN
