@@ -365,7 +365,8 @@ SUB checkTankStatus
       }
 
       /if (${iniAggroAbilities[${i},${bOnlyAfterTaunt}].NotEqual[-]}) {
-         /if (${tauntSuccessList.Contains[${assistTarget}_]}==-1) {
+         |/if (${tauntSuccessList.Contains[${assistTarget}_]}==FALSE) {
+         /if (${tauntSuccessListContains[${assistTarget}_]}==FALSE) {
             /goto :loopnexti
          }
       }
@@ -475,7 +476,6 @@ SUB setAssistOn(targetID)
    /tar id ${targetID}
    /if (${Me.Pet.ID}) /timed 3 /pet attack
 
-   |/call check_AssistStatus
 /RETURN
 
 SUB check_AssistStatus
@@ -1039,6 +1039,18 @@ SUB processDebuffsForTargetID(int targetID)
    :loopesc
 
 /RETURN
+
+SUB tauntSuccessListContains(string s)
+   /if (${tauntSuccessList.Count}==0) /return
+   /declare i int local
+
+   /for i 0 to ${Math.Calc[${tauntSuccessList.Count}-1]}
+      /if (${tauntSuccessList.Item[${i}].Find[${s}]}!=NULL) /return TRUE
+   /next i
+
+   /return FALSE
+/RETURN
+
 
 
 SUB fullTarget(int targetID)

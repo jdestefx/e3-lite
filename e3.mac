@@ -82,6 +82,7 @@ SUB Main()
 		}
 
 		| CALL INCLUDED FEATURES
+		/call check_Combat
 		/call heal_Background_Events
 		/call assist_Background_Events
 		/call buffCheck_Background_Events
