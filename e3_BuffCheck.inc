@@ -468,9 +468,12 @@ SUB processBuffs
          /break
       }
 
-      :loopnext
+      /if (${Macro.Return.Equal[CAST_CANCELLED]}) {
+         /break
+      }
+
    /next i
-   :loopend
+
 /RETURN
 
 SUB getActiveBandolierName 

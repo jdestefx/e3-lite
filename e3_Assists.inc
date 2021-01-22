@@ -365,7 +365,6 @@ SUB checkTankStatus
       }
 
       /if (${iniAggroAbilities[${i},${bOnlyAfterTaunt}].NotEqual[-]}) {
-         |/if (${tauntSuccessList.Contains[${assistTarget}_]}==FALSE) {
          /if (${tauntSuccessListContains[${assistTarget}_]}==FALSE) {
             /goto :loopnexti
          }
@@ -406,6 +405,10 @@ SUB checkTankStatus
          /delay 3
          /goto :loopnexti
       } else {
+         /if (${Me.Moving}==TRUE) {
+            /multiline ; /moveto stop ; /nav stop ; /stick off
+            /delay 5
+         }
          /call e3_Cast ${assistTarget} "${iniAggroAbilities[${i},1]}"
       }
 
@@ -1041,7 +1044,7 @@ SUB processDebuffsForTargetID(int targetID)
 /RETURN
 
 SUB tauntSuccessListContains(string s)
-   /if (${tauntSuccessList.Count}==0) /return
+   /if (${tauntSuccessList.Count}==0) /return FALSE
    /declare i int local
 
    /for i 0 to ${Math.Calc[${tauntSuccessList.Count}-1]}
