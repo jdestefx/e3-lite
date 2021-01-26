@@ -256,7 +256,7 @@ SUB checkAutoMez
          /call e3_cast ${targetID} ${autoMezSpell} NETBOTATTACKING,TARGETISASSITTARGET
 
          /if (${Macro.Return.Equal[NOTREADY]}) {
-            /delay 10
+            /delay 2
             /goto :recast
          }
 
@@ -767,6 +767,7 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
       }
 
       /call e3_cast ${assistTarget} "${assistSpellName}" "TargetDead"
+
       /varset castResult ${Macro.Return}
 
       /if (${castResult.Equal[CAST_NOTAKEHOLD]}) {
@@ -792,10 +793,14 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
          /varset actionTaken TRUE
          /if (${stopAfterActionTaken}==TRUE) /break
       } else /if (${castResult.Equal[CAST_RESIST]}) {
-         /delay 20
          /varset currentResistCount ${Math.Calc[${currentResistCount}+1]}
          /bc Cast Attempts: ${currentResistCount} of ${maxResists}
-         /if (${currentResistCount}<${maxResists}) /goto :resistRetry
+         /if (${currentResistCount}<${maxResists}) {
+            /while (${isCastReady[${assistSpellName}]}==FALSE) {
+               /delay 2
+            }
+            /goto :resistRetry
+         }
 
          /if (${currentResistCount}==${maxResists}) {
             /bc My spell was resisted too much.  Giving up...
@@ -1011,25 +1016,28 @@ SUB processDebuffsForTargetID(int targetID)
 
       | CAST THE DEBUFF
       /call e3_Cast ${targetID} "${castName}"
-      /varset debuffResult ${Macro.Return}
+      /varset debuffResult CAST_RESIST
+      |/varset debuffResult ${Macro.Return}
       
       /bc ${castName}(${Spawn[id ${targetID}].CleanName}) RES=> ${debuffResult}
 
       /if (${debuffResult.Equal[LOS]}) /goto :loopesc
       /if (${debuffResult.Equal[CAST_INTERRUPTED]}) /goto :loopesc
       /if (${debuffResult.Equal[CAST_RESIST]}) {
-         /delay 20
          /varset currentResistCount ${Math.Calc[${currentResistCount}+1]}
          /bc Cast Attempts: ${currentResistCount} of ${maxResists}
-         /if (${currentResistCount}<${maxResists}) /goto :resistRetry
+         /if (${currentResistCount}<${maxResists}) {
+            /while (${isCastReady[${castName}]}==FALSE) {
+               /delay 2
+            }
+            /goto :resistRetry
+         }
       }
 
       | If the cast was successful.
       /if (${debuffResult.Equal[CAST_SUCCESS]}) {
          /if (${spellTime}>0) {
-            /echo /declare ${timerName} timer outer ${spellTime}s
             /declare ${timerName} timer outer ${spellTime}s
-            /echo created timer: ${timerName}
          }
       }
 
