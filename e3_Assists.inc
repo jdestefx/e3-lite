@@ -934,6 +934,7 @@ SUB processDebuffsForTargetID(int targetID)
 
       /if (${iniDebuffs[${i},1].Equal[-]}) /goto :loopesc
 
+
       /if (${iniDebuffs[${i},${bTargetOverLevel}].NotEqual[-]}) {
          /if (${Spawn[id ${targetID}].Level} < ${iniDebuffs[${i},${bTargetOverLevel}]}) /goto :loopnext
       }
@@ -975,8 +976,8 @@ SUB processDebuffsForTargetID(int targetID)
       }
 
       /varset castName ${iniDebuffs[${i},1]}
-      /if (${Me.Gem[${castName}]}==NULL) /goto :loopnext
-      /if (${Me.Gem[${castName}]}!=NULL && ${Me.SpellReady[${castName}]}==FALSE) /goto :loopnext
+
+      /if (${isCastReady[${castName}]}==FALSE) /goto :loopnext
 
       /call e3_getSpellByCastRequestName "${castName}"
       /if (${Macro.Return.Equal[UNKNOWN]}) /goto :loopesc
