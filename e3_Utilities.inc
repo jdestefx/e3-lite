@@ -528,6 +528,22 @@ SUB wipeLockout(string timerName)
 	}
 /RETURN
 
+SUB isNetBotAttackingID(int targetID)
+	/declare netbotCount int local ${NetBots.Counts}
+	/declare i int local
+	/declare netbotName string local
+
+
+	/for i 1 to ${netbotCount}
+		/varset netbotName ${NetBots.Client[${i}]}	
+		/if (${NetBots[${netbotName}].Attacking}==TRUE && ${NetBots[${netbotName}].TargetID}==${targetID}) {
+			/return TRUE
+		}
+	/next i
+
+	/RETURN FALSE
+/RETURN
+
 SUB memorizeSpellInGem(string spellName, int gemNumber)
 	/if (${Me.Casting.ID}!=NULL) {
 		/interrupt

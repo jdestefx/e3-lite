@@ -211,7 +211,6 @@ SUB checkCancelConditions(string conditions)
 		/call getEntryParam "${conditions}" TARGETLIFEPCT
 		| TRYING NETBOTS TO ACCOUNT FOR THE LATENCY OF A HEALTH BAR WHEN CHANGING TARGETS
 		/if (${NetBots[${Target.Name}].PctHPs} > ${Math.Calc[${Macro.Return}]}) {
-			/echo cancelling for pcthps
 			/return TRUE
 		}
 	}
@@ -219,13 +218,18 @@ SUB checkCancelConditions(string conditions)
 	/if (${conditions.Upper.Find[TARGETHASBUFF:]}!=0) {
 		/call getEntryParam "${conditions}" TARGETHASBUFF
 		/if (${Target.Buff[${Macro.Return}].ID}!=NULL) {
-			/echo cancelling for hasbuff
 			/return TRUE
 		}
 	}
 
 	/IF (${conditions.Upper.Find[TARGETDEAD]}!=0) {
 		/if (${Target.Dead}==TRUE || ${Target.ID}==NULL) {
+			/return TRUE
+		}
+	}
+
+	/if (${conditions.Upper.Find[NETBOTATTACKING]}!=0) { 
+		/if (${isNetBotAttackingID[${Target.ID}]}==TRUE) {
 			/return TRUE
 		}
 	}

@@ -223,17 +223,16 @@ SUB checkAutoMez
          /if (${Spawn[id ${xSpawn.ID}].ID}==NULL) /continue
 
          /if (${autoMezList.Index[${xSpawn.ID}]}==-1) {
-            /echo adding to mez list ${xSpawn.ID}
             /invoke ${autoMezList.Append[${xSpawn.ID}]}
          }
       /next i
    }
 
 
-   | MAINTENANCE: CLEANUP ANYTHING THAT MIGHT BE DEAD OR GONE
+   | MAINTENANCE: CLEANUP ANYTHING THAT MIGHT BE DEAD OR GONE OR IS BEING ATTACKED BY A NETBOT
    /if (${autoMezList.Count}>0) {
       /for i ${Math.Calc[${autoMezList.Count}-1]} downto 0
-         /if (${autoMezList.Item[${i}]}==${assistTarget} || ${Spawn[id ${autoMezList.Item[${i}]}].Dead}==TRUE || ${Spawn[id ${autoMezList.Item[${i}]}].ID}==NULL) {
+         /if (${autoMezList.Item[${i}]}==${assistTarget} || ${Spawn[id ${autoMezList.Item[${i}]}].Dead}==TRUE || ${Spawn[id ${autoMezList.Item[${i}]}].ID}==NULL || ${isNetBotAttackingID[${autoMezList.Item[${i}]}]}==TRUE) {
             /call wipeLockout mez_${autoMezList.Item[${i}]}
             /invoke ${autoMezList.Erase[${i}]}
             /continue
@@ -241,18 +240,31 @@ SUB checkAutoMez
       /next i
    }
 
+   /if (${autoMezList.Count}==0) /return
+
    | PROCESS LIST AND MEZ 
    /for i 0 to ${Math.Calc[${autoMezList.Count}-1]}
       /varset targetID ${autoMezList.Item[${i}]}
-      /if (${isLockoutExpired[mez_${targetID}]}==TRUE) {
+
+      /call fullTarget ${targetID}
+
+      /if (${Target.Mezzed.ID}==NULL || ${isLockoutExpired[mez_${targetID}]}==TRUE) {
          /call e3_getSpellByCastRequestName ${autoMezSpell}
          /vardata xSpell ${Macro.Return}
 
-         /call e3_cast ${targetID} ${autoMezSpell} TARGETISASSITTARGET
+         :recast
+         /call e3_cast ${targetID} ${autoMezSpell} NETBOTATTACKING,TARGETISASSITTARGET
+
+         /if (${Macro.Return.Equal[NOTREADY]}) {
+            /delay 10
+            /goto :recast
+         }
+
          /if (${Macro.Return.Equal[CAST_SUCCESS]}) {
             /call lockout mez_${targetID} ${Math.Calc[${xSpell.Duration.TotalSeconds}-${autoMezTimerMarginSeconds}]}s
-         }
+         }      
       }
+
    /next i
 /RETURN
 
@@ -1266,20 +1278,21 @@ SUB EVENT_mezBreak(string line, string spellName)
 /RETURN
 
 
-#EVENT charmBreak "#1# has been awakened by#*#"
+#EVENT charmBreak "#1# has been xawakened by#*#"
 SUB EVENT_charmBreak(string line, string mobName)
    /declare i int local
    /declare mob spawn local
 
    /declare mobCount int local ${SpawnCount[${mobName}]}
 
-   | FIND THE CORRECT MOB. INITIATE A RE-MEZ BY ZEROING THE TIMER
+   | FIND THE CORRECT MOB. INITIATE A RE-MEZ BY REMOVING FROM MEZLIST AND LET MEZ CHECK FIND IT AGAIN
    /for i 1 to ${mobCount}
       /vardata mob NearestSpawn[${i},${mobName}]
       /if (${autoMezList.Index[${mob.ID}]}!=-1) {
          /tar id ${mob.ID}
          /delay 10
          /if (${Target.Mezzed.ID}==NULL) {
+            /invoke ${autoMezList.Erase[${autoMezList.Index[${mob.ID}]}]}
             /varset mez_${mob.ID} 0
             /return
          }
