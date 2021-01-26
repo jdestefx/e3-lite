@@ -1016,8 +1016,7 @@ SUB processDebuffsForTargetID(int targetID)
 
       | CAST THE DEBUFF
       /call e3_Cast ${targetID} "${castName}"
-      /varset debuffResult CAST_RESIST
-      |/varset debuffResult ${Macro.Return}
+      /varset debuffResult ${Macro.Return}
       
       /bc ${castName}(${Spawn[id ${targetID}].CleanName}) RES=> ${debuffResult}
 
