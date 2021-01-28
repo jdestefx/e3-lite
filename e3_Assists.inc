@@ -232,7 +232,7 @@ SUB checkAutoMez
    | MAINTENANCE: CLEANUP ANYTHING THAT MIGHT BE DEAD OR GONE OR IS BEING ATTACKED BY A NETBOT
    /if (${autoMezList.Count}>0) {
       /for i ${Math.Calc[${autoMezList.Count}-1]} downto 0
-         /if (${autoMezList.Item[${i}]}==${assistTarget} || ${Spawn[id ${autoMezList.Item[${i}]}].Dead}==TRUE || ${Spawn[id ${autoMezList.Item[${i}]}].ID}==NULL || ${isNetBotAttackingID[${autoMezList.Item[${i}]}]}==TRUE) {
+         /if (${Spawn[id ${autoMezList.Item[${i}]}].Aggressive}==FALSE || ${autoMezList.Item[${i}]}==${assistTarget} || ${Spawn[id ${autoMezList.Item[${i}]}].Dead}==TRUE || ${Spawn[id ${autoMezList.Item[${i}]}].ID}==NULL || ${isNetBotAttackingID[${autoMezList.Item[${i}]}]}==TRUE) {
             /call wipeLockout mez_${autoMezList.Item[${i}]}
             /invoke ${autoMezList.Erase[${i}]}
             /continue
@@ -249,19 +249,23 @@ SUB checkAutoMez
       /call fullTarget ${targetID}
 
       /if (${Target.Mezzed.ID}==NULL || ${isLockoutExpired[mez_${targetID}]}==TRUE) {
-         /call e3_getSpellByCastRequestName ${autoMezSpell}
+         /call e3_getSpellByCastRequestName "${autoMezSpell}"
          /vardata xSpell ${Macro.Return}
 
          :recast
-         /call e3_cast ${targetID} ${autoMezSpell} NETBOTATTACKING,TARGETISASSITTARGET
+         /call e3_cast ${targetID} "${autoMezSpell}" NETBOTATTACKING,TARGETISASSITTARGET
 
-         /if (${Macro.Return.Equal[NOTREADY]}) {
+         /if (${Macro.Return.Equal[NOTREADY]} || ${Macro.Return.Equal[CAST_INTERRUPTED]} ) {
             /delay 2
             /goto :recast
          }
 
          /if (${Macro.Return.Equal[CAST_SUCCESS]}) {
             /call lockout mez_${targetID} ${Math.Calc[${xSpell.Duration.TotalSeconds}-${autoMezTimerMarginSeconds}]}s
+            /echo ${xSpell}
+            /echo ${xSpell.Duration.TotalSeconds}
+            /echo ${autoMezTimerMarginSeconds}
+            /echo /call lockout mez_${targetID} ${Math.Calc[${xSpell.Duration.TotalSeconds}-${autoMezTimerMarginSeconds}]}s
          }      
       }
 
