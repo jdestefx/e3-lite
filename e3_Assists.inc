@@ -203,6 +203,7 @@ SUB checkTauntSuccessList
 
 SUB checkAutoMez
    /if (${autoMezCheckTimer}>0) /return
+   /if (${Stick.Active}==TRUE) /return
    /if (${Me.Moving}==TRUE) /return
    /if (${Me.Invis}==TRUE) /return
 
@@ -246,13 +247,23 @@ SUB checkAutoMez
    /for i 0 to ${Math.Calc[${autoMezList.Count}-1]}
       /varset targetID ${autoMezList.Item[${i}]}
 
+      /if (${Spawn[id ${targetID}].Dead}) /continue
+
       /call fullTarget ${targetID}
+
+      /if (${Target.Mezzed.ID}!=NULL) {
+         /if (${Target.Mezzed.Duration.TotalSeconds} > ${autoMezTimerMarginSeconds}) {
+            /call lockout mez_${targetID} ${Math.Calc[${Target.Mezzed.Duration.TotalSeconds}-${autoMezTimerMarginSeconds}]}s
+            /continue
+         }
+      }
 
       /if (${Target.Mezzed.ID}==NULL || ${isLockoutExpired[mez_${targetID}]}==TRUE) {
          /call e3_getSpellByCastRequestName "${autoMezSpell}"
          /vardata xSpell ${Macro.Return}
 
          :recast
+         /face fast id ${targetID}
          /call e3_cast ${targetID} "${autoMezSpell}" NETBOTATTACKING,TARGETISASSITTARGET
 
          /if (${Macro.Return.Equal[NOTREADY]} || ${Macro.Return.Equal[CAST_INTERRUPTED]} ) {
