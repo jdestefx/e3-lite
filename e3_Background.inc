@@ -2,6 +2,7 @@
 Sub background_Setup
    /declare actionTaken bool outer FALSE
    /declare backgroundCheckTimer timer outer 0
+   /declare adhocCastList list outer 
    
    
    | TODO ELIMINATE
@@ -231,5 +232,38 @@ SUB EVENT_followStop(string line, string chatSender)
 
    /varset buffCheckTimer 5s
    |/if (${Spawn[pc ${chatSender}].ID}==NULL) /return
+
+/RETURN
+
+
+#EVENT adhocCast "<#1#> e3 cast #2# #3#"
+SUB EVENT_adhocCast(string line, string chatSender, string castName, string target)
+   /declare i int local
+   /declare botName string local
+   /declare botID int local
+   /declare spellID int local
+   /declare castSpell spell local
+
+   /call e3_getSpellByCastRequestName "${castName}"
+   /if (${Macro.Return.Equal[UNKNOWN]}) {
+      /bc Could not identify a spell from request: "${castName}"
+      /return
+   }
+   /varset castSpell ${Macro.Return}
+  
+   /if (${target.Upper.Equal[ALL]}) {
+      /for i 1 to ${NetBots.Counts}
+         /varset botName ${NetBots.Client[${i}]}
+         /varset botID ${NetBots[${botName}].ID}
+         /if (${adhocCastList.Contains[${castSpell}_${botID}]}==TRUE) /continue
+         /invoke (${adhocCastList.Append[${castSpell}_${botID}]})
+      /next i
+   } else /if (${Spawn["${target}"].ID}!=NULL) {
+      /if (${adhocCastList.Contains[${castSpell}_${Spawn["${target}"].ID}]}==TRUE) {
+         /bc Already have a cast request for "${castName}" for ${Spawn["${target}"].CleanName}
+         /return
+      }
+      /invoke ${adhocCastList.Append[${castSpell}_${Spawn["${target}"].ID}]}
+   }
 
 /RETURN
