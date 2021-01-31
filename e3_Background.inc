@@ -2,6 +2,7 @@
 Sub background_Setup
    /declare actionTaken bool outer FALSE
    /declare backgroundCheckTimer timer outer 0
+   /declare adhocCastListCheckTimer timer outer 0
    /declare adhocCastList list outer 
    
    
@@ -62,14 +63,6 @@ Sub check_Scatter
    }
 /RETURN
 
-
-
-
-|------------------------------------------------------------------------------------------------|
-|- Updates the combatTimer whenever you, or someone in your party, is Assisting, or in combat.    -|
-|------------------------------------------------------------------------------------------------|
-|- Sets combatTimer to the combatDelay whenever combat is detected.                        -|
-|------------------------------------------------------------------------------------------------|
 SUB check_Combat
    /declare i int local
    /declare botName string local
@@ -93,7 +86,6 @@ SUB check_Combat
    /next i
 /RETURN
 
-
 Sub background_Background_Events
    /if (${backgroundCheckTimer}>0) /return
    /varset backgroundCheckTimer 1s
@@ -106,10 +98,39 @@ Sub background_Background_Events
       /varset buffDurations ${buffDurations};${Me.Buff[${i}].Spell.ID}_${Me.Buff[${i}].Duration.TotalSeconds}
    /next i
 
+   /if (${adhocCastList.Count}>0) {
+      /call checkAdhocCastList
+   }
+
    |/varset buffDurations ${buffDurations.Right[-1]}
 
    /netnote ${buffDurations}
 /return
+
+SUB checkAdhocCastList
+   /echo ...
+   /if (${adhocCastListCheckTimer}>0) /return
+   /varset adhocCastListCheckTimer 1s
+
+   /declare i int local
+   /declare castName string local
+
+   /if (${Me.Casting.ID}!=NULL) /return
+   /if (${Me.Moving}==TRUE && ${canCastWhileMoving}==FALSE) /return
+   /if (${Me.Invis}==TRUE) /return
+
+   /for i 0 to ${Math.Calc[${adhocCastList.Count}-1]}
+      /call e3_cast "${adhocCastList.Item[${i}].Token[2,_]}" "${adhocCastList.Item[${i}].Token[1,_]}"
+
+      /if (${Macro.Return.Equal[CAST_INTERRUPTED]} || ${Macro.Return.Equal[CAST_CANCELLED]}) {
+         /return
+      }
+
+      /invoke ${adhocCastList.Erase[${i}]}
+      /return
+
+   /next i
+/RETURN
 
 
 #EVENT resetCombatTimerForBuffs "<#*#> e3 buffs"
@@ -235,35 +256,41 @@ SUB EVENT_followStop(string line, string chatSender)
 
 /RETURN
 
+#EVENT adhocCast "[#1#(msg)] e3 cast #2#@#3#"
+#EVENT adhocCast "<#1#> e3 cast #2#@#3#"
+SUB EVENT_adhocCast(string line, string chatSender, string castName, string castTarget)
+   /varset castName ${castName.Upper}
 
-#EVENT adhocCast "<#1#> e3 cast #2# #3#"
-SUB EVENT_adhocCast(string line, string chatSender, string castName, string target)
+   /echo ${castName}
+   /echo ${castTarget}
+
    /declare i int local
    /declare botName string local
    /declare botID int local
    /declare spellID int local
    /declare castSpell spell local
 
-   /call e3_getSpellByCastRequestName "${castName}"
-   /if (${Macro.Return.Equal[UNKNOWN]}) {
-      /bc Could not identify a spell from request: "${castName}"
-      /return
-   }
-   /varset castSpell ${Macro.Return}
+   |/call e3_getSpellByCastRequestName ${castName}
+   |/echo ret: ${Macro.Return}
+   |/if (${Macro.Return.Equal[UNKNOWN]}) {
+   |   /bc Could not identify a spell from request: ${castName}
+   |   /return
+   |}
+   |/vardata castSpell ${Macro.Return}
   
-   /if (${target.Upper.Equal[ALL]}) {
+   /if (${castTarget.Upper.Equal[ALL]}) {
       /for i 1 to ${NetBots.Counts}
          /varset botName ${NetBots.Client[${i}]}
          /varset botID ${NetBots[${botName}].ID}
-         /if (${adhocCastList.Contains[${castSpell}_${botID}]}==TRUE) /continue
-         /invoke (${adhocCastList.Append[${castSpell}_${botID}]})
+         /if (${adhocCastList.Contains[${castName}_${botID}]}==TRUE) /continue
+         /invoke (${adhocCastList.Append[${castName}_${botID}]})
       /next i
-   } else /if (${Spawn["${target}"].ID}!=NULL) {
-      /if (${adhocCastList.Contains[${castSpell}_${Spawn["${target}"].ID}]}==TRUE) {
-         /bc Already have a cast request for "${castName}" for ${Spawn["${target}"].CleanName}
+   } else /if (${Spawn["${castTarget}"].ID}!=NULL) {
+      /if (${adhocCastList.Contains[${castName}_${Spawn["${castTarget}"].ID}]}==TRUE) {
+         /bc Already have a cast request for ${castName} for ${Spawn["${castTarget}"].CleanName}
          /return
       }
-      /invoke ${adhocCastList.Append[${castSpell}_${Spawn["${target}"].ID}]}
+      /invoke ${adhocCastList.Append[${castName}_${Spawn["${castTarget}"].ID}]}
    }
 
 /RETURN
