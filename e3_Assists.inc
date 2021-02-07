@@ -2,6 +2,7 @@
 
 SUB assist_CharacterSettings(bool backFillOnly)   
    /call WriteToIni "${iniFileCharacter},Assist,Auto-Assist" YES ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoAssist Percent" 99 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Stick Point" BEHIND ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Melee" YES ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Melee Distance" 8 ${backFillOnly}
@@ -558,7 +559,11 @@ SUB check_AssistStatus
    }
 
    /if (${Spawn[id ${assistTarget}].LineOfSight}==FALSE && ${maintainAssistLOS}==TRUE) {
-      /nav id ${assistTarget}
+      /if (${Spawn[id ${assistTarget}].ID}==NULL) {
+         /nav stop
+      } else {
+         /nav id ${assistTarget}
+      }
    }
 
    | TOO FAR? MOVE TO
@@ -667,6 +672,8 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
    /varset checkAssistSpellsTimer 5
    /if (${assistTarget}==0) /return
 
+   /if (${Me.Moving}==TRUE && ${canCastWhileMoving}==FALSE) /return
+
    /declare i int local
    /declare castResult string local
    /declare assistSpell spell local
@@ -675,12 +682,17 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
    /declare assistTimerValue int local 0
    /declare maxResists int local 5
    /declare currentResistCount int local 0
+   /declare cancelConditions string local
+
+   /declare lifeDeficit int local
+   /declare lifeRatio int local
 
    /for i 1 to ${${processArray}.Size}
       /varset assistSpellName ${${processArray}[${i},1]}
       /varset assistTimerValue 0
       /varset currentResistCount 0
       /varset maxResists 5
+      /varset cancelConditions TARGETDEAD
 
       /if (${assistSpellName.Equal[-]}) /break
 
@@ -739,18 +751,26 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
          /if (${Me.ActiveDisc.ID}!=NULL) /continue
       }
 
-      | CHECKS AFTER HERE REQUIRE TARGET REFRESH
-      /if (${Target.ID} != ${assistTarget}) {
-         /tar id ${assistTarget}
-         /delay 7
-      }
-
       /if (${${processArray}[${i},${bTargetOverHP}].NotEqual[-]}) {
+         /call fullTarget ${assistTarget}
          /if (${Target.PctHPs} < ${${processArray}[${i},${bTargetOverHP}]}) /continue
+         /varset cancelConditions ${cancelConditions},TARGETUNDERHP:${${processArray}[${i},${bTargetOverHP}]}
       }
 
       /if (${${processArray}[${i},${bTargetUnderHP}].NotEqual[-]}) {
+         /call fullTarget ${assistTarget}
          /if (${Target.PctHPs} >= ${${processArray}[${i},${bTargetUnderHP}]}) /continue
+      }
+
+      /if (${${processArray}[${i},${bTargetLifeManaRatio}].NotEqual[-]}) {
+         /call fullTarget ${assistTarget}
+
+         /varset lifeDeficit ${Math.Calc[100-${Target.PctHPs}]}
+         /varset lifeRatio ${${processArray}[${i},${bTargetLifeManaRatio}]}
+         /echo ${Math.Calc[100-(${lifeDeficit}/${lifeRatio})]}
+         /if (${Me.PctMana} < ${Math.Calc[100-(${lifeDeficit}/${lifeRatio})]}) {
+            /continue
+         }
       }
 
 
@@ -780,8 +800,8 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
             /call memorizeSpellInGem "${assistSpellName}" ${${processArray}[${i},${bMemInGem}]}
          }
       }
-
-      /call e3_cast ${assistTarget} "${assistSpellName}" "TargetDead"
+      
+      /call e3_cast ${assistTarget} "${assistSpellName}" "${cancelConditions}"
 
       /varset castResult ${Macro.Return}
 
@@ -942,10 +962,14 @@ SUB processDebuffsForTargetID(int targetID)
    /declare entry string local
    /declare maxResists int local 5
    /declare currentResistCount int local 0
+   /declare cancelConditions string local
+   /declare lifeDeficit int local
+   /declare lifeRatio int local
 
 
    /for i 1 to ${iniDebuffs.Size}
       /varset currentResistCount 0
+      /varset cancelConditions TARGETDEAD
 
       /if (${iniDebuffs[${i},1].Equal[-]}) /goto :loopesc
 
@@ -984,7 +1008,21 @@ SUB processDebuffsForTargetID(int targetID)
       /if (${iniDebuffs[${i},${bTargetOverHP}].NotEqual[-]}) {
          /call fullTarget ${targetID}
          /if (${Target.PctHPs} <= ${iniDebuffs[${i},${bTargetOverHP}]}) /goto :loopnext
+         /varset cancelConditions ${cancelConditions},TARGETUNDERHP:${iniDebuffs[${i},${bTargetOverHP}]}
+
       }
+
+      /if (${iniDebuffs[${i},${bTargetLifeManaRatio}].NotEqual[-]}) {
+         /call fullTarget ${targetID}
+
+         /varset lifeDeficit ${Math.Calc[100-${Target.PctHPs}]}
+         /varset lifeRatio ${iniDebuffs[${i},${bTargetLifeManaRatio}]}
+         /echo ${Math.Calc[100-(${lifeDeficit}/${lifeRatio})]}
+         /if (${Me.PctMana} < ${Math.Calc[100-(${lifeDeficit}/${lifeRatio})]}) {
+            /continue
+         }
+      }
+
 
       /if (${iniDebuffs[${i},${bMaxResists}].NotEqual[-]}) {
          /varset maxResists ${iniDebuffs[${i},${bMaxResists}]}
@@ -1031,7 +1069,7 @@ SUB processDebuffsForTargetID(int targetID)
       :resistRetry
 
       | CAST THE DEBUFF
-      /call e3_Cast ${targetID} "${castName}"
+      /call e3_Cast ${targetID} "${castName}" "${cancelConditions}"
       /varset debuffResult ${Macro.Return}
       
       /bc ${castName}(${Spawn[id ${targetID}].CleanName}) RES=> ${debuffResult}

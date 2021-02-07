@@ -1,7 +1,7 @@
 Sub basics_Setup
    /declare clippedDown bool outer FALSE
-   /declare expAmt float outer 
-   /declare aaExpAmt float outer
+   /declare expAmt int outer ${Me.Exp}
+   /declare aaExpAmt int outer ${Me.AAExp}
 
    /declare roamTargetID int outer 0
    /declare roamMode bool outer FALSE
@@ -324,7 +324,7 @@ sub check_Roam
       /if (${assistTarget}!=0) /call setAssistOff
       
       |/moveto loc ${Spawn[${roamTargetID}].Y} ${Spawn[${roamTargetID}].X} ${Spawn[${roamTargetID}].Z} 
-      /if (${Nav.Active}==FALSE) /nav id ${roamTargetID}
+      /nav id ${roamTargetID}
       /varset roamRefreshTimer 10
    }
 /return

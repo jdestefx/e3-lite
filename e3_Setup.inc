@@ -26,6 +26,7 @@
 
 
 SUB e3_Setup(string iniSuffix)
+   /declare macroVersion string local 1.20
    /declare iniFileCharacter string outer e3_bots\${MacroQuest.Server}-${Me.CleanName}${iniSuffix}.ini
 
    /declare manaClasses string outer CLR,DRU,ENC,PAL,BRD,WIZ,MAG,SHM,NEC,BST,SHD
@@ -119,6 +120,8 @@ SUB e3_Setup(string iniSuffix)
    /declare bTargetType string outer 59
    /declare bRequireCastIdle string outer 60
    /declare bOnlyAfterTaunt string outer 61
+   /declare bTargetLifeManaRatio string outer 62
+   /declare bAmToT string outer 63
 
    |/declare autoKeywordIndex int outer 22
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE

@@ -124,6 +124,14 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 		/doevents
 		/delay 1
 
+		/if (${castSpell.TargetType.NotEqual[SELF]} && ${Target.ID} != ${targetID}) {
+			/if (${cancelConditions.Upper.Find[TARGET]}!=NULL) {
+				/call fullTarget ${targetID}
+			} else {
+				/tar id ${targetID}
+			}
+		}
+
 		/if (${assistTarget}==0 && ${Stick.Active}==TRUE) {
 			/interrupt
 			/break
@@ -139,7 +147,8 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 			/break
 		}
 
-		/if (${checkCancelConditions[${cancelConditions}]}==TRUE) {
+		/call checkCancelConditions "${cancelConditions}"
+		/if (${Macro.Return}==TRUE) {
 			/bc Cancel conditions met. (${cancelConditions})
 			/interrupt
 			/break
@@ -163,14 +172,14 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 	| RESET COMBATTIMER TO WHAT IT WAS BEFORE CAST START
 	/if (${combatTimerValue}>0) /varset combatTimer ${combatDelay}
 
-	/echo CastResult: ${Cast.Result}
+	/echo CR:  CastResult: ${Cast.Result}
 
 	/if (${Cast.Result.Equal[CAST_FIZZLE]}) {
 		/varset fizzleCount ${Math.Calc[${fizzleCount}+1]}
 		/if (${fizzleCount} <= ${maxFizzle}) /goto :castStart
 	}
 
-	/if (${Select[${Cast.Result},CAST_RESIST,CAST_SUCCESS,CAST_INTERRUPTED,CAST_CANCELLED]}>0) {
+	/if (${Select[${Cast.Result},CAST_RESIST,CAST_SUCCESS,CAST_INTERRUPTED,CAST_CANCELLED,CAST_IMMUNE]}>0) {
 		/return ${Cast.Result}
 	}
 
@@ -178,8 +187,6 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 
 	/return CAST_UNKNOWN
 /RETURN
-
-
 
 SUB isCastReady(string request)
 	/declare castType string local
@@ -203,6 +210,13 @@ SUB checkCancelConditions(string conditions)
 
 	/if (${conditions.Upper.Find[TARGETISASSITTARGET]}!=0) {
 		/if (${assistTarget}==${Target.ID}) {
+			/return TRUE
+		}
+	}
+
+	/if (${conditions.Upper.Find[TARGETUNDERHP:]}!=0) {
+		/call getEntryParam "${conditions}" TARGETUNDERHP
+		/if (${Target.PctHPs} < ${Macro.Return}) {
 			/return TRUE
 		}
 	}

@@ -302,14 +302,11 @@ SUB getIniSectionToArray(string iniKey, string arrayName)
 #event expSpammerResponder "#*#You gain experience#*#"
 SUB event_expSpammerResponder
 	/if (${expSpam}==TRUE) {
-		/declare newAAExp float inner
-		/varcalc newAAExp (${Me.AAPointsSpent} + ${Me.AAPoints} + ${Math.Calc[${Me.PctAAExp}/100]})
+		/declare newAAExp int local ${Me.AAExp}
+		/declare newExp int local ${Me.Exp}
 
-		/declare newExp float inner
-		/varcalc newExp (${Me.Level}*100) + ${Me.PctExp}
-
-		/if (${expAmt} < ${newExp}) /bc REG ► +${Math.Calc[${newExp}-${expAmt}]}%  (LV: ${Me.Level},  Pct: ${Me.PctExp})
-		/if (${aaExpAmt} < ${newAAExp}) /bc AA ► +${Math.Calc[(${newAAExp}-${aaExpAmt})*100]}%  (${Me.AAPoints}.${newAAExp});
+		/if (${expAmt} < ${newExp}) /bc AA ► +${Math.Calc[(${newExp}-${expAmt}) /1000 ].Precision[3]} [${Me.PctExp.Int}%] (${Me.Level})
+		/if (${aaExpAmt} < ${newAAExp}) /bc AA ► +${Math.Calc[(${newAAExp}-${aaExpAmt}) /1000 ].Precision[3]} [${Me.PctAAExp.Int}%] (${Me.AAPoints} Banked)
 
 		/varset expAmt ${newExp}
 		/varset aaExpAmt ${newAAExp}
