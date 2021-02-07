@@ -376,8 +376,13 @@ SUB checkTankStatus
    /declare i int local 
    /declare entry string local
 
-   /if (${dontTakeAggroFrom.NotEqual[NONE]} && ${Me.SecondaryAggroPlayer.ID}!=NULL) {
-      /call characterPassesAllowKeySeries ${Me.SecondaryAggroPlayer.CleanName.Upper} "${dontTakeAggroFrom.Upper}"
+   |/if (${dontTakeAggroFrom.NotEqual[NONE]} && ${Me.SecondaryAggroPlayer.ID}!=NULL) {
+   |   /call characterPassesAllowKeySeries ${Me.SecondaryAggroPlayer.CleanName.Upper} "${dontTakeAggroFrom.Upper}"
+   |   /if (${Macro.Return}==TRUE) /return
+   |}
+
+   /if (${dontTakeAggroFrom.NotEqual[NONE]} && ${Me.TargetOfTarget.ID}!=NULL) {
+      /call characterPassesAllowKeySeries ${Me.TargetOfTarget.CleanName.Upper} "${dontTakeAggroFrom.Upper}"
       /if (${Macro.Return}==TRUE) /return
    }
 
@@ -767,7 +772,6 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
 
          /varset lifeDeficit ${Math.Calc[100-${Target.PctHPs}]}
          /varset lifeRatio ${${processArray}[${i},${bTargetLifeManaRatio}]}
-         /echo ${Math.Calc[100-(${lifeDeficit}/${lifeRatio})]}
          /if (${Me.PctMana} < ${Math.Calc[100-(${lifeDeficit}/${lifeRatio})]}) {
             /continue
          }
@@ -1014,10 +1018,8 @@ SUB processDebuffsForTargetID(int targetID)
 
       /if (${iniDebuffs[${i},${bTargetLifeManaRatio}].NotEqual[-]}) {
          /call fullTarget ${targetID}
-
          /varset lifeDeficit ${Math.Calc[100-${Target.PctHPs}]}
          /varset lifeRatio ${iniDebuffs[${i},${bTargetLifeManaRatio}]}
-         /echo ${Math.Calc[100-(${lifeDeficit}/${lifeRatio})]}
          /if (${Me.PctMana} < ${Math.Calc[100-(${lifeDeficit}/${lifeRatio})]}) {
             /continue
          }
