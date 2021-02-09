@@ -350,3 +350,4 @@ SUB Event_cantLoot
    /bc test
    /varset stopWait TRUE
 /RETURN
+

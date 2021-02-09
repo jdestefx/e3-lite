@@ -31,7 +31,7 @@ Sub assist_Setup
    /declare burnCheckTimer timer outer 0
 
    /declare combatTimer timer outer
-   /declare combatDelay int outer 100
+   /declare combatDelay int outer 70
    /declare assistQueue string outer 
    /declare autoAbilitiesCheckTimer timer outer
    /declare assistTarget int outer 0
@@ -88,6 +88,12 @@ Sub assist_Setup
    /declare joustTimer timer outer
    /declare joustDestYXZ string outer
    /declare joustWaitAtSafeSpot bool outer FALSE
+
+   /declare campCheckTimer timer outer 
+   /declare campEnabled bool outer FALSE
+   /declare campX int outer
+   /declare campY int outer   
+   /declare campZ int outer
 
    /declare trapNames string outer a dark entity,a shimmering orb,a formless terror,a low hum,a singularity,a wardstone,a null field,an immobilizer,an explosion,a tanglefoot trap,a blast of heat
 
@@ -172,6 +178,7 @@ Sub assist_Background_Events
       /varset burnCheckTimer 1s
    }
 
+   /if (${campEnabled}==TRUE) /call checkCamp
    /if (${autoAssistHoldTimer}>0) /return
    /if (${autoAssist}==TRUE && ${assistTarget}==0) /call check_AutoAssist
    /if (${doCharm}==TRUE) /call checkCharm
@@ -185,6 +192,21 @@ Sub assist_Background_Events
    /if (${canDoDebuffs}==TRUE && ${Me.Moving}==FALSE && ${debuffTargetIDs.Length}>0) /call checkDebuffs
    /if (${beneficialStrip.NotEqual[NONE]} && ${doBeneficialStrip}==TRUE) /call check_Dispell
 /return
+
+SUB checkCamp 
+   /if (${campCheckTimer}>0) /RETURN
+   /varset campCheckTimer 5
+
+   /if (${Stick.Active}==TRUE || ${Navigation.Active}==TRUE) /RETURN
+   /if (${combatTimer}>0) /RETURN
+
+   /if (${Navigation.MeshLoaded}==TRUE && ${Navigation.Active}==FALSE && ${Math.Distance[${campY} ${campX} ${campZ}]}>20) {
+      /bc Returning to camp.
+      /nav locxyz ${campX} ${campY} ${campZ}
+   } else {
+      /moveto loc ${campY} ${campX}
+   }
+/RETURN
 
 SUB checkTauntSuccessList
    /if (${tauntSuccessList.Count}==0) /return
@@ -1386,3 +1408,29 @@ SUB EVENT_tauntSuccess(string line, string newMode)
    
    /invoke ${tauntSuccessList.Append[${Target.ID}_${MacroQuest.Running}]}
 /RETURN
+
+
+#EVENT campCommand "[#1#(msg)] e3 camp #2#"
+#EVENT campCommand "<#1#> e3 camp #2#"
+   SUB EVENT_campCommand(string line, string source, string newMode)
+      /if (${Spawn[${source}].ID}==NULL) {
+         /bc Can't find "${source}" to use as the camp location.
+         /return
+      }
+      
+      /varset campX ${Spawn[${source}].X}
+      /varset campY ${Spawn[${source}].Y}
+      /varset campZ ${Spawn[${source}].Z}
+
+      /if (${newMode.Upper.Equal[OFF]}) {
+         /varset campEnabled FALSE
+         /bc Camp mode disabled.
+      }
+
+      /if (${newMode.Upper.Equal[HERE]}) {
+         /varset campEnabled TRUE
+         /bc Now camping at X:${campX} Y:${campY} Z:${campZ}
+      }
+   /RETURN
+
+

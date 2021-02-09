@@ -91,10 +91,23 @@ SUB Main()
 		/call background_Background_Events
 
 		/doevents
-		
+
+		|/call checkEmote
 	/goto :mainLoopStart
 	
 /RETURN
+
+SUB checkEmote
+	/if (${Math.Calc[ ${Math.Rand[30000]} + 1 ]}==999) {
+		/declare insults[14] string local
+		/varset insults[1] Yet only the will of Penrilgone keeps you alive.
+		/varset insults[2] Penrilgone is your god.
+		/varset insults[3] You were created from filth by the will of Penrilgone.
+		/varset insults[4] You are no better than filth.  Of no value to Penrilgone.
+		/docommand /say ${insults[ ${Math.Calc[ ${Math.Rand[3]} + 1 ]} ]}
+	}
+/RETURN
+
 
 SUB checkOpenWindows
 	/if (${Window[BigBankWnd].Open})    /return TRUE
