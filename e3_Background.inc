@@ -242,6 +242,7 @@ SUB EVENT_followMe(string line, string chatSender, string stickOpts)
    /stick id ${Spawn[pc ${chatSender}].ID} ${stickOpts}
 /RETURN
 
+#EVENT followStop "[#1#(msg)] e3 stop#*#"
 #EVENT followStop "<#1#> e3 stop#*#"
 SUB EVENT_followStop(string line, string chatSender)
    /squelch /moveto off

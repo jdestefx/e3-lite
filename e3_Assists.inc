@@ -5,6 +5,7 @@ SUB assist_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Assist,AutoAssist Percent" 99 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Stick Point" BEHIND ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Melee" YES ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AuotFire" NO ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Melee Distance" 8 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Slay Index" 99 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,SlayReferencePoint" ${Me.CleanName} ${backFillOnly}
@@ -49,6 +50,7 @@ Sub assist_Setup
    /declare assistStickPoint string outer BEHIND
    /declare dontTakeAggroFrom string outer
    /declare meleeAssist bool outer TRUE
+   /declare auotFireAssist bool outer FALSE
    /declare assistStickDistance int outer 8
    /declare autoAssist bool outer FALSE
    /declare autoAssistPercent int outer 99
@@ -102,6 +104,7 @@ Sub assist_Setup
    /call getIniToVar "${iniFileCharacter},Assist,Stick Point" assistStickPoint BEHIND
    /call getIniToVar "${iniFileCharacter},Assist,Melee" meleeAssist YES
    /call getIniToVar "${iniFileCharacter},Assist,Melee Distance" assistStickDistance 8
+   /call getIniToVar "${iniFileCharacter},Assist,AutoFire" auotFireAssist NO
    /call getIniToVar "${iniFileCharacter},Assist,Auto-Assist" autoAssist FALSE
    /call getIniToVar "${iniFileCharacter},Assist,AutoAssist Percent" autoAssistPercent 99
    /call getIniToVar "${iniFileCharacter},Assist,BeneficialStrip" beneficialStrip NONE
@@ -126,6 +129,12 @@ Sub assist_Setup
 
    /varset slayIndex ${Math.Calc[${slayIndex}-1]}
    /if (${tankMode}==TRUE) /varset assistStickPoint
+   /if (${auotFireAssist}==TRUE && ${meleeAssist}==TRUE)  {
+      /varset meleeAssist FALSE
+      /varset tankMode FALSE
+      /bc >>> Disabling melee assist because AutoFire is enabled. Cannot have both. <<<
+   }
+
 /return
 
 SUB stickingToPlayer 
@@ -161,7 +170,6 @@ Sub assist_Background_Events
       } 
    }
 
-
    /if (${autoDisarm}==TRUE) {
       /call checkAutoDisarm
    }
@@ -191,7 +199,27 @@ Sub assist_Background_Events
    /if (${canDoAutoAbilities}==TRUE) /call check_autoAbilities
    /if (${canDoDebuffs}==TRUE && ${Me.Moving}==FALSE && ${debuffTargetIDs.Length}>0) /call checkDebuffs
    /if (${beneficialStrip.NotEqual[NONE]} && ${doBeneficialStrip}==TRUE) /call check_Dispell
+   /if (${auotFireAssist}==TRUE && ${assistTarget}!=0) /call checkAutoFireAssist
 /return
+
+SUB checkAutoFireAssist
+   /declare tgt spawn local
+   /vardata tgt Spawn[id ${assistTarget}]
+
+   /declare minRange int local ${Math.Calc[7*${tgt.Height}]}
+
+   /if (${tgt.Distance}<${minRange}) {
+      /bc >>> Target too close for autofire, backing up <<<
+      /keypress back hold
+      /timed 3 /keypress back release
+      /delay 4
+      /return
+   }
+
+   /if (${Me.AutoFire}==FALSE) {
+      /autofire
+   }
+/RETURN
 
 SUB checkCamp 
    /if (${campCheckTimer}>0) /RETURN
@@ -537,6 +565,7 @@ SUB setAssistOn(targetID)
 /RETURN
 
 SUB check_AssistStatus
+
    | DID I CHANGE ZONES? 
    /if (${Zone.ID} != ${assistBeganInZoneID}) {
       /bc I'm no longer in the right zone. Stopping assist.
@@ -555,13 +584,19 @@ SUB check_AssistStatus
    /declare assistSpawn spawn local
    /vardata assistSpawn Spawn[id ${assistTarget}]
 
-   /if (${Spawn[id ${assistTarget}].Dead}) {
+   /if (${assistSpawn.Dead}) {
       /if (${assistQueue.Length}>0) {
          /call checkAssistQueue
       } else {
          /call setAssistOff
       }
       /RETURN
+   }
+
+   | stop assisting against pets belonging to players
+   /if (${assistSpawn.Type.Equal[Pet]} && ${assistSpawn.Master.Type.Equal[PC]}) {
+      /call setAssistOff
+      /return
    }
 
    | Check range.
@@ -1418,19 +1453,27 @@ SUB EVENT_tauntSuccess(string line, string newMode)
          /return
       }
       
-      /varset campX ${Spawn[${source}].X}
-      /varset campY ${Spawn[${source}].Y}
-      /varset campZ ${Spawn[${source}].Z}
-
       /if (${newMode.Upper.Equal[OFF]}) {
          /varset campEnabled FALSE
          /bc Camp mode disabled.
       }
 
       /if (${newMode.Upper.Equal[HERE]}) {
+         /varset campX ${Spawn[${source}].X}
+         /varset campY ${Spawn[${source}].Y}
+         /varset campZ ${Spawn[${source}].Z}
          /varset campEnabled TRUE
-         /bc Now camping at X:${campX} Y:${campY} Z:${campZ}
+         /bc Now camping at ${source} location.
       }
+
+      /if (${newMode.Upper.Equal[THERE]}) {
+         /varset campX ${Me.X}
+         /varset campY ${Me.Y}
+         /varset campZ ${Me.Z}
+         /varset campEnabled TRUE
+         /bc Now camping at my location.
+      }
+
    /RETURN
 
 

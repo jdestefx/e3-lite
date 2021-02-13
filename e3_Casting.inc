@@ -22,7 +22,7 @@ SUB e3_getCastTypeByCastRequest(string castRequest)
 /RETURN
 
 SUB e3_getSpellByCastRequestName(string castRequest) 
-   /if (${FindItemCount[=${castRequest}]}>0) /return FindItem[${castRequest}].Spell
+   /if (${FindItemCount[=${castRequest}]}>0) /return FindItem[=${castRequest}].Spell
    /if (${Spell[${castRequest}].ID}) /return Spell[${castRequest}]
    /if (${Me.AltAbility[${castRequest}].ID}) /return Me.AltAbility[${castRequest}].Spell
    /if (${Me.CombatAbility[${castRequest}]}) { 
