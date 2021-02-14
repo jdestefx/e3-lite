@@ -228,12 +228,15 @@ SUB checkCamp
    /if (${Stick.Active}==TRUE || ${Navigation.Active}==TRUE) /RETURN
    /if (${combatTimer}>0) /RETURN
 
-   /if (${Navigation.MeshLoaded}==TRUE && ${Navigation.Active}==FALSE && ${Math.Distance[${campY} ${campX} ${campZ}]}>20) {
-      /bc Returning to camp.
-      /nav locxyz ${campX} ${campY} ${campZ}
-   } else {
-      /moveto loc ${campY} ${campX}
+   /if (${Math.Distance[${campY} ${campX} ${campZ}]}>20) {
+      /if (${Navigation.MeshLoaded}==TRUE && ${Navigation.Active}==FALSE && ) {
+         /bc Returning to camp.
+         /nav locxyz ${campX} ${campY} ${campZ}
+      } else {
+         /moveto loc ${campY} ${campX}
+      }
    }
+   
 /RETURN
 
 SUB checkTauntSuccessList
