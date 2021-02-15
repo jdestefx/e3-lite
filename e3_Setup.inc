@@ -122,6 +122,8 @@ SUB e3_Setup(string iniSuffix)
    /declare bOnlyAfterTaunt string outer 61
    /declare bTargetLifeManaRatio string outer 62
    /declare bAmToT string outer 63
+   /declare bRequireCursed string outer 64
+
 
    |/declare autoKeywordIndex int outer 22
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE
@@ -197,10 +199,8 @@ SUB loadIniSections
       /varset shortSectionName ${sectionName.Replace[ ,]}
       /varset newArrayName ini${shortSectionName} 
 
-      /echo ${newArrayName}
-      
       /declare ${newArrayName}[64,64] string outer -
-      /declare tmpArray[64] string outer
+      /declare tmpArray[96] string outer
       /call getIniSectionToArray "${iniFileCharacter},${shortSectionName}" tmpArray
       /call processArray tmpArray ${newArrayName}
       /deletevar tmpArray

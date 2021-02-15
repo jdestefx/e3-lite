@@ -51,6 +51,8 @@ Sub assist_Setup
    /declare dontTakeAggroFrom string outer
    /declare meleeAssist bool outer TRUE
    /declare auotFireAssist bool outer FALSE
+   /declare autoFireMeleeMode bool outer FALSE
+   /declare autoFireTankMode bool outer FALSE
    /declare assistStickDistance int outer 8
    /declare autoAssist bool outer FALSE
    /declare autoAssistPercent int outer 99
@@ -128,11 +130,15 @@ Sub assist_Setup
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezTimerMarginSeconds" autoMezTimerMarginSeconds 10
 
    /varset slayIndex ${Math.Calc[${slayIndex}-1]}
+   
    /if (${tankMode}==TRUE) /varset assistStickPoint
+
    /if (${auotFireAssist}==TRUE && ${meleeAssist}==TRUE)  {
+      /if (${meleeAssist}==TRUE) /varset autoFireMeleeMode TRUE
+      /if (${tankMode}==TRUE) /varset autoFireTankMode TRUE
       /varset meleeAssist FALSE
       /varset tankMode FALSE
-      /bc >>> Disabling melee assist because AutoFire is enabled. Cannot have both. <<<
+      /bc >>> AutoFire is enabled: Disablign Melee/Tank. Use "e3 toggle autofire [ON|OFF]" to toggle.<<<
    }
 
 /return
@@ -206,13 +212,13 @@ SUB checkAutoFireAssist
    /declare tgt spawn local
    /vardata tgt Spawn[id ${assistTarget}]
 
-   /declare minRange int local ${Math.Calc[7*${tgt.Height}]}
+   /declare minRange int local 30
 
    /if (${tgt.Distance}<${minRange}) {
       /bc >>> Target too close for autofire, backing up <<<
       /keypress back hold
-      /timed 3 /keypress back release
-      /delay 4
+      /timed 2 /keypress back release
+      /delay 3
       /return
    }
 
@@ -1423,7 +1429,6 @@ SUB EVENT_charmBreak(string line, string mobName)
    /next i
 /RETURN
 
-
 #event toggleAutomez "[#*#(msg)] e3 automez #1#"
 #event toggleAutomez "<#*#> e3 automez #1#"
 SUB EVENT_toggleAutomez(string line, string newMode)
@@ -1437,8 +1442,6 @@ SUB EVENT_toggleAutomez(string line, string newMode)
 
 /RETURN 
 
-
-
 #event tauntSuccess "You capture #*# attention!"
 #event tauntSuccess "You capture #*# with your unparalleled reproach!"
 SUB EVENT_tauntSuccess(string line, string newMode)
@@ -1447,36 +1450,53 @@ SUB EVENT_tauntSuccess(string line, string newMode)
    /invoke ${tauntSuccessList.Append[${Target.ID}_${MacroQuest.Running}]}
 /RETURN
 
-
 #EVENT campCommand "[#1#(msg)] e3 camp #2#"
 #EVENT campCommand "<#1#> e3 camp #2#"
-   SUB EVENT_campCommand(string line, string source, string newMode)
-      /if (${Spawn[${source}].ID}==NULL) {
-         /bc Can't find "${source}" to use as the camp location.
-         /return
-      }
-      
-      /if (${newMode.Upper.Equal[OFF]}) {
-         /varset campEnabled FALSE
-         /bc Camp mode disabled.
-      }
+SUB EVENT_campCommand(string line, string source, string newMode)
+   /if (${Spawn[${source}].ID}==NULL) {
+      /bc Can't find "${source}" to use as the camp location.
+      /return
+   }
+   
+   /if (${newMode.Upper.Equal[OFF]}) {
+      /varset campEnabled FALSE
+      /bc Camp mode disabled.
+   }
 
-      /if (${newMode.Upper.Equal[HERE]}) {
-         /varset campX ${Spawn[${source}].X}
-         /varset campY ${Spawn[${source}].Y}
-         /varset campZ ${Spawn[${source}].Z}
-         /varset campEnabled TRUE
-         /bc Now camping at ${source} location.
-      }
+   /if (${newMode.Upper.Equal[HERE]}) {
+      /varset campX ${Spawn[${source}].X}
+      /varset campY ${Spawn[${source}].Y}
+      /varset campZ ${Spawn[${source}].Z}
+      /varset campEnabled TRUE
+      /bc Now camping at ${source} location.
+   }
 
-      /if (${newMode.Upper.Equal[THERE]}) {
-         /varset campX ${Me.X}
-         /varset campY ${Me.Y}
-         /varset campZ ${Me.Z}
-         /varset campEnabled TRUE
-         /bc Now camping at my location.
-      }
+   /if (${newMode.Upper.Equal[THERE]}) {
+      /varset campX ${Me.X}
+      /varset campY ${Me.Y}
+      /varset campZ ${Me.Z}
+      /varset campEnabled TRUE
+      /bc Now camping at my location.
+   }
 
-   /RETURN
+/RETURN
 
 
+#event toggleAutofire "[#*#(msg)] e3 autofire #1#"
+#event toggleAutofire "<#*#> e3 autofire #1#"
+SUB EVENT_campCommand(string line, string newMode)
+   if (${newMode.Upper.Equal[ON]}) {
+      /varset auotFireAssist TRUE
+      /varset meleeAssist FALSE
+      /varset tankMode FALSE
+      /bc Autofire is ON.
+   } else /if (${newMode.Upper.Equal[OFF]}) {
+      /varset auotFireAssist FALSE
+      /if (${autoFireTankMode}==TRUE) /varset tankMode TRUE
+      /if (${autoFireMeleeMode}==TRUE) /varset meleeAssist TRUE
+      /bc Autofire is OFF.
+   } else {
+      /bc Unrecognized option ${newMode}.  Use ON or OFF.
+      /return
+   }
+/RETURN

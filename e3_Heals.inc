@@ -417,6 +417,10 @@ SUB getNetBotReadyForHeal(int healPct, int iniHealIndex)
 			/if (${NetBots[${netbotName}].Poisoned} == 0) /continue
 		}
 
+		/if (${iniHeals[${iniHealIndex},${bRequireCursed}].NotEqual[-]}) {
+			/if (${NetBots[${netbotName}].Cursed} == 0) /continue
+		}
+
 		| bRequireHurtPartyMembers implies group memeber, so verify
 		/if (${iniHeals[${iniHealIndex},${bRequireHurtPartyMembers}].NotEqual[-]}) {
 			/if (${Group.Member[${netbotName}].ID}==NULL) /continue
