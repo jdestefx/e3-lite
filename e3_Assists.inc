@@ -214,6 +214,8 @@ SUB checkAutoFireAssist
 
    /declare minRange int local 30
 
+   /if (${Me.TargetOfTarget.ID}==${Me.ID}) /return
+   
    /if (${tgt.Distance}<${minRange}) {
       /bc >>> Target too close for autofire, backing up <<<
       /keypress back hold
