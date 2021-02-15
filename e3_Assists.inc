@@ -216,6 +216,9 @@ SUB checkAutoFireAssist
 
    /if (${Me.TargetOfTarget.ID}==${Me.ID}) /return
    
+   /if (${Stick.Active}==TRUE) /stick off
+   /if (${Navigation.Active}==TRUE) /nav stop
+
    /if (${tgt.Distance}<${minRange}) {
       /bc >>> Target too close for autofire, backing up <<<
       /keypress back hold
@@ -1486,7 +1489,7 @@ SUB EVENT_campCommand(string line, string source, string newMode)
 
 #event toggleAutofire "[#*#(msg)] e3 autofire #1#"
 #event toggleAutofire "<#*#> e3 autofire #1#"
-SUB EVENT_campCommand(string line, string newMode)
+SUB EVENT_toggleAutofire(string line, string newMode)
    /if (${newMode.Upper.Equal[ON]}) {
       /varset auotFireAssist TRUE
       /varset meleeAssist FALSE
