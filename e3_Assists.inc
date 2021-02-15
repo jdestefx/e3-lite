@@ -1487,7 +1487,7 @@ SUB EVENT_campCommand(string line, string source, string newMode)
 #event toggleAutofire "[#*#(msg)] e3 autofire #1#"
 #event toggleAutofire "<#*#> e3 autofire #1#"
 SUB EVENT_campCommand(string line, string newMode)
-   if (${newMode.Upper.Equal[ON]}) {
+   /if (${newMode.Upper.Equal[ON]}) {
       /varset auotFireAssist TRUE
       /varset meleeAssist FALSE
       /varset tankMode FALSE
