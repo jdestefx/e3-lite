@@ -286,8 +286,10 @@ SUB checkHeals
 			/if (${iniHeals[${i},${bNoSitTimer}].NotEqual[-]}) /call pauseMedBreak ${iniHeals[${i},${bNoSitTimer}]}
 			
 			/return TRUE
+		} else /if (${Macro.Return.Equal[NOTREADY]}) {
+			/goto :loopnexti
 		} else {
-			/echo CastResult: ${Macro.Return}
+			/echo CastResult Unhandled: ${Macro.Return}
 			/return
 		}
 

@@ -528,7 +528,7 @@ SUB check_slay
    /declare refX int local ${Spawn[${slayReferencePoint}].X}
    /declare refY int local ${Spawn[${slayReferencePoint}].Y}
    /declare refZ int local ${Spawn[${slayReferencePoint}].Z}
-   /declare search string local npc los targetable range 1 60 radius 35 loc ${refX} ${refY}
+   /declare search string local npc los targetable range 1 60 radius 55 loc ${refX} ${refY}
    /declare xID int local
    /declare max int local ${SpawnCount[${search}]}
    /declare i int local
