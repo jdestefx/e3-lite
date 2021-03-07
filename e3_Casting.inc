@@ -16,8 +16,8 @@ SUB casting_CharacterSettings
 SUB e3_getCastTypeByCastRequest(string castRequest) 
    /if (${Me.AltAbility[${castRequest}].ID}) /return ALTABILITY
    /if (${Me.CombatAbility[${castRequest}]}) /return DISCIPLINE
-   /if (${Spell[${castRequest}].ID}) /return SPELL
    /if (${FindItemCount[${castRequest}]}) /return ITEM
+   /if (${Spell[${castRequest}].ID}) /return SPELL
    /RETURN UNKNOWN
 /RETURN
 

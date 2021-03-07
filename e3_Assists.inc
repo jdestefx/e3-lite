@@ -24,6 +24,8 @@ SUB assist_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Assist,AutoMezSpell" ENTRANCE ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,AutoMezSpawnSearch" "radius 50 los range 1 10" ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,AutoMezTimerMarginSeconds" 10 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoMezMustHaveName" - ${backFillOnly}
+
 /RETURN
 
 Sub assist_Setup
@@ -84,6 +86,7 @@ Sub assist_Setup
    /declare autoMezSpawnSearch string outer NONE
    /declare autoMezTimerMarginSeconds string outer 10
    /declare autoMezCheckTimer timer outer 0
+   /declare autoMezMustHaveName string outer -
    /declare tauntSuccessList list outer 
 
    /declare joustEnabled bool outer FALSE
@@ -128,6 +131,7 @@ Sub assist_Setup
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezSpawnSearch" autoMezSpawnSearch "radius 50 los range 40 55"
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezSpell" autoMezSpell NONE
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezTimerMarginSeconds" autoMezTimerMarginSeconds 10
+   /call getIniToVar "${iniFileCharacter},Assist,AutoMezMustHaveName" autoMezMustHaveName -
 
    /varset slayIndex ${Math.Calc[${slayIndex}-1]}
    
@@ -276,22 +280,31 @@ SUB checkAutoMez
 
    /declare spawnsInRangeCount int local ${SpawnCount[${autoMezSpawnSearch}]}
    /declare i int local
+   /declare j int local
    /declare xSpawn spawn local
    /declare targetID int local
    /declare xSpell spell local
+   /declare useMezSpell string local
 
    | SCAN AND ADD CANDIDATES
    /if (${spawnsInRangeCount}>0) {
+
       /for i 1 to ${spawnsInRangeCount}
          /vardata xSpawn NearestSpawn[${i},${autoMezSpawnSearch}]
          /if (${Spawn[id ${xSpawn.ID}].ID}==${assistTarget}) /continue
          /if (${Spawn[id ${xSpawn.ID}].Dead}==TRUE) /continue
          /if (${Spawn[id ${xSpawn.ID}].ID}==NULL) /continue
 
+         /if (${autoMezMustHaveName.NotEqual[-]}) {
+            /if (${checkAutoMezNameMatch[${xSpawn.CleanName}]}==FALSE) /continue
+         }
+
          /if (${autoMezList.Index[${xSpawn.ID}]}==-1) {
             /invoke ${autoMezList.Append[${xSpawn.ID}]}
          }
+
       /next i
+
    }
 
 
@@ -307,6 +320,8 @@ SUB checkAutoMez
    }
 
    /if (${autoMezList.Count}==0) /return
+
+
 
    | PROCESS LIST AND MEZ 
    /for i 0 to ${Math.Calc[${autoMezList.Count}-1]}
@@ -324,12 +339,21 @@ SUB checkAutoMez
       }
 
       /if (${Target.Mezzed.ID}==NULL || ${isLockoutExpired[mez_${targetID}]}==TRUE) {
-         /call e3_getSpellByCastRequestName "${autoMezSpell}"
-         /vardata xSpell ${Macro.Return}
 
          :recast
-         /face fast id ${targetID}
-         /call e3_cast ${targetID} "${autoMezSpell}" NETBOTATTACKING,TARGETISASSITTARGET
+         /call getReadyMezSpell
+         /if (${Macro.Return.Equal[-]}) {
+            /echo No ready spell. (${autoMezSpell})
+            /delay 2
+            /goto :recast
+         } else {
+            /varset useMezSpell ${Macro.Return}   
+         }
+
+         /call e3_getSpellByCastRequestName "${useMezSpell}"
+         /vardata xSpell ${Macro.Return}
+
+         /call e3_cast ${targetID} "${useMezSpell}" NETBOTATTACKING,TARGETISASSITTARGET
 
          /if (${Macro.Return.Equal[NOTREADY]} || ${Macro.Return.Equal[CAST_INTERRUPTED]} ) {
             /delay 2
@@ -346,6 +370,39 @@ SUB checkAutoMez
       }
 
    /next i
+/RETURN
+
+SUB checkAutoMezNameMatch(string n)
+   /declare i int local
+
+   /for i 1 to ${Math.Calc[${autoMezMustHaveName.Count[,]}+1]}
+      /if (${n.Find[${autoMezMustHaveName.Token[${i},,]]}]}!=NULL) {
+         /return TRUE
+      }
+   /next i
+
+   /return FALSE
+/RETURN
+
+SUB getReadyMezSpell
+   /declare i int local 
+
+   /if (${autoMezSpell.Find[,]}==0) {
+      /if (${isCastReady[${autoMezSpell}]}==FALSE) {
+         /return -
+      } else {
+         /return ${autoMezSpell}
+      }
+   } else {
+      /for i 1 to ${Math.Calc[${autoMezSpell.Count[,]}+1]}
+         /ECHO CHECkready: ${autoMezSpell.Token[${i},,]}]}
+         /if (${isCastReady[${autoMezSpell.Token[${i},,]}]}==TRUE) {
+            /return ${autoMezSpell.Token[${i},,]}
+         }
+      /next i
+   }
+
+   /return -
 /RETURN
 
 SUB checkCharm
