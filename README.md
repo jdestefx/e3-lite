@@ -38,8 +38,8 @@ CharmBreakCommand=NONE					; [COMMAND] Provides a custom mechanism for performin
 							; Could be used to make other bots stun or taunt the mob so the bot can recahrm. 
 							; (ehg. /bct clerics //casting `stun command` -targetid|!!{Target.ID})
 AutoMez=NO						; [YES|NO] Toggle for automez logic.
-AutoMezSpell=NONE					; [SPELL NAME] Name of the mez to use for automez. 
-AutoMezSpawnSearch=npc radius 50 los range 1 60		; [SPAWN SEARCH] The spawn search criteria for identifying mobs to automez.
+AutoMezSpell=NONE					; [SPELL NAME] Name of the mez spell or spells (comma separated) to use for automez. 
+AutoMezSpawnSearch=npc radius 50 los range 1 60		; [SPAWN SEARCH] The spawn search criteria for identifying mobs to automez. Range is the level range. Obviously stay under your mez spell's limit.
 AutoMezTimerMarginSeconds=10				; [INT] Adjust re-mez time by adding margin here. Use seconds (without "s" at the end).
 
 
@@ -124,7 +124,7 @@ NoSitTimer				Prevents sitting (if medidate is on) for this amount of time after
 					Can be several formats: 50 = 5 seconds.  5s = 5 seconds.
 RecastDelay 				Adds a delay between casting this spell entry as to not drain mana too fast. Use deci-seconds only.
 					ie.  50 = 5 seconds.  Does not support "5s" syntax.
-
+TargetLifeManaRatio			Uses the Assist Target's life as a gauge for when/if this spell can cast.  A value of 2 will prevent the bot from going under 50m casting this entry. 2.5, 3, etc will keep more mana.
 
 [AssistSpells]
 These are the spells that will be casted on the singular assist target, triggered when a character sees "assist on [spawnID]"
@@ -165,6 +165,7 @@ TargetUnderLevel			Target must be under this level.
 TargetOverLevel				Target must be at or over this level.
 RequireDiseased				Target must have a disease on them.
 RequirePoisoned				Target must have a poison on them.
+RequireCursed				Target must have a curse on them.
 SelfOverHP				Caster must be at or over this much HP. Good for shaman canni.
 SelfUnderHP				Caster must be at under this much HP.
 SelfOverMana				Caster must be over this percent mana.
@@ -198,6 +199,21 @@ Form a team by adding a line like the following, excluding the character who's I
 heal team.
 
 OtherHealerNetBots=Pinzarn,Naltron
+
+[AggroAbilities]
+
+AggroAbilities is a section of entries that will only be processed when Tank=ON.
+
+NotToT				If bot is not the Target of Target.
+AmToT				If bot is the Target of Target.
+OnlyAfterTaunt			Only valid for a few seconds after a successful taunt.  
+DoAbility			Taunt, bash, kick, need this hint so the engine knows to use /doability
+SelfNotHighestAggro		Once aggro meters are in-game, if bot is not the higher aggro holder.
+CombatTimeOver			Requires N seconds of combat to pass.
+SelfOverEnd			If bot is over % endurance.
+NextHighestAggroOver		Once aggro meters are in-game, if second highest person on aggro = N.
+TargetUnderDistance		Require target to be under N distance.
+RequireMobsInProximity		Require this many mobs in proximity. Generally for AE taunt.
 
 
 [AutoAbilities]
