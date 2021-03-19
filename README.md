@@ -76,7 +76,7 @@ NoCancelChecks			This flag will ignore whether or not the target character alrea
 				notice the buff is still on the character, and stop casting.  This cycle repeats 4 or 5 
 				times until the buff is actually gone. You will probably want this on most buff entries.
 
-RequireGroup 			The target must be in the buffer's group.
+RequireGroup [NOT AVAILABLE]	The target must be in the buffer's group.
 RequireGroupInRange		All group memebers must be in range before this spell will cast.
 SelfOverHP			Buffer must be at or over this much HP. Good for shaman canni.
 SelfUnderHP			Buffer must be at under this much HP.
