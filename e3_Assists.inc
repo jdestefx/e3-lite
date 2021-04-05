@@ -32,7 +32,7 @@ Sub assist_Setup
    /declare burnTimer timer outer 0
    /declare burnsActive bool outer FALSE
    /declare burnCheckTimer timer outer 0
-   /declare persistentAssistTags string outer
+   /declare persistentAssistTags string outer -
    /declare assistTags string outer -
 
    /declare combatTimer timer outer
@@ -750,6 +750,7 @@ SUB setAssistOff
    /varset assistTime 0
    /varset assistTarget 0
    /varset assistBeganInZoneID 0
+   /varset assistTags -
 /RETURN
 
 | SEE IF I SHOULD AUTO-ASSIST SOMETHING THAT A FELLOW NETBOT IS ATTACKING
@@ -806,10 +807,20 @@ SUB validateAssistTags(string tagsToCheck)
    /declare matches int local 0
    /declare res bool local TRUE
    /declare checkTags list local
+   /declare fullTags list local
+
+   /if (${assistTags.NotEqual[-]}) {
+      /invoke ${fullTags.Append[${assistTags}]}
+   }
+
+   /if (${persistentAssistTags.NotEqual[-]}) {
+      /invoke ${fullTags.Append[${persistentAssistTags}]}
+   }
 
    /invoke ${checkTags.Append[${tagsToCheck}]}
+
    /for i 0 to ${Math.Calc[${checkTags.Count}-1]}
-      /if (${Select[${checkTags.Item[${i}]},${assistTags}]}>0) /varset matches ${Math.Calc[${matches}+1]}
+      /if (${fullTags.Contains[${checkTags.Item[${i}]}]}) /varset matches ${Math.Calc[${matches}+1]}
    /next i
 
    /if (${matches} >= ${checkTags.Count}) {
@@ -862,10 +873,8 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
       }
 
       /if (${${processArray}[${i},${bRequireAssistTag}].NotEqual[-]}) {
-         /if (${assistTags.NotEqual[-]}) {
-            /call validateAssistTags ${${processArray}[${i},${bRequireAssistTag}]}
-            /if (${Macro.Return}==FALSE) /continue
-         }
+         /call validateAssistTags ${${processArray}[${i},${bRequireAssistTag}]}
+         /if (${Macro.Return}==FALSE) /continue
       }
 
       /if (${${processArray}[${i},${bMaxResists}].NotEqual[-]}) {
@@ -1140,18 +1149,17 @@ SUB processDebuffsForTargetID(int targetID)
 
       /if (${iniDebuffs[${i},1].Equal[-]}) /goto :loopesc
 
+
       /if (${iniDebuffs[${i},${bNotIfAssistTag}].NotEqual[-]}) {
-         /if (${assistTags.NotEqual[-]}) {
+         /if (${assistTags.NotEqual[-]} || ${persistentAssistTags.NotEqual[-]}) {
             /call validateAssistTags ${iniDebuffs[${i},${bNotIfAssistTag}]}
             /if (${Macro.Return}==TRUE) /continue
          }
       }
 
       /if (${iniDebuffs[${i},${bRequireAssistTag}].NotEqual[-]}) {
-         /if (${assistTags.NotEqual[-]}) {
-            /call validateAssistTags ${iniDebuffs[${i},${bRequireAssistTag}]}
-            /if (${Macro.Return}==FALSE) /continue
-         }
+         /call validateAssistTags ${iniDebuffs[${i},${bRequireAssistTag}]}
+         /if (${Macro.Return}==FALSE) /continue
       }
 
       /if (${iniDebuffs[${i},${bTargetOverLevel}].NotEqual[-]}) {
@@ -1358,19 +1366,13 @@ SUB event_Assist(line, string chatSender, string params)
 
    /if (${params.Count[ ]}>0) {
       /varset assistTags ${params.Token[2, ]}
-      /if (${persistentAssistTags.Length}>0) /varset assistTags ${persistentAssistTags},${assistTags}
       /varset targetID ${params.Token[1, ]}
-   } else {
-      /varset targetID ${params}
-      /varset assistTags ${persistentAssistTags}
    }
 
    /if (${NetBots[${chatSender}].InZone} == FALSE) {
       /bc Cannot assist. Not in the same zoneID.
       /return
    }
-
-   /echo ::${assistTags}::
 
    /stick off
    /moveto off

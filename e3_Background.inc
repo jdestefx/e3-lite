@@ -235,7 +235,6 @@ SUB EVENT_followMe(string line, string chatSender, string stickOpts)
    /if (${Spawn[pc ${chatSender}].ID}==NULL) /return
    /if (${Spawn[pc ${chatSender}].Distance}>1000) /return
 
-
    /call setAssistOff
    /if (${Me.Class.ShortName.NotEqual[BRD]}) /interrupt
    /echo /stick id ${Spawn[pc ${chatSender}].ID} ${stickOpts}
@@ -255,7 +254,6 @@ SUB EVENT_followStop(string line, string chatSender)
 
    /varset buffCheckTimer 5s
    |/if (${Spawn[pc ${chatSender}].ID}==NULL) /return
-
 /RETURN
 
 #EVENT adhocCast "[#1#(msg)] e3 cast #2#@#3#"
