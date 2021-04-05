@@ -19,7 +19,7 @@
 #include e3_Setup.inc
 
 SUB Main()
-	/em coughs.
+	|/em coughs.
 	/declare iniSuffix string local
 
 	/if (${Defined[Param0]}==TRUE && ${Param0.Length}>0) {

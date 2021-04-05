@@ -31,7 +31,7 @@ SUB e3_Setup(string iniSuffix)
 
    /declare manaClasses string outer CLR,DRU,ENC,PAL,BRD,WIZ,MAG,SHM,NEC,BST,SHD
    /declare manaRegenClasses string outer CLR,DRU,ENC,PAL,WIZ,MAG,SHM,BST,SHD
-   /declare hasteClasses string outer MNK,BRD,ROG,WAR,RNG,PAL,BST,SHD
+   /declare hasteClasses string outer MNK,BRD,ROG,WAR,RNG,PAL,BST,SHD,BER
    /declare meleeClasses string outer BRD,BER,BST,MNK,PAL,RNG,ROG,SHD,WAR
    /declare priestClasses string outer CLR,DRU,SHM
    /declare hybridClasses string outer PAL,BST,BRD,RNG
@@ -123,7 +123,8 @@ SUB e3_Setup(string iniSuffix)
    /declare bTargetLifeManaRatio string outer 62
    /declare bAmToT string outer 63
    /declare bRequireCursed string outer 64
-
+   /declare bRequireAssistTag string outer 65
+   /declare bNotIfAssistTag string outer 66
 
    |/declare autoKeywordIndex int outer 22
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE
@@ -199,7 +200,7 @@ SUB loadIniSections
       /varset shortSectionName ${sectionName.Replace[ ,]}
       /varset newArrayName ini${shortSectionName} 
 
-      /declare ${newArrayName}[64,64] string outer -
+      /declare ${newArrayName}[96,96] string outer -
       /declare tmpArray[96] string outer
       /call getIniSectionToArray "${iniFileCharacter},${shortSectionName}" tmpArray
       /call processArray tmpArray ${newArrayName}

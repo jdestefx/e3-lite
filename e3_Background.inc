@@ -250,6 +250,7 @@ SUB EVENT_followStop(string line, string chatSender)
    /squelch /stick off
    /squelch /afollow off
    
+   /varset autoAssistHoldTimer 3s
    /call setAssistOff
 
    /varset buffCheckTimer 5s
@@ -262,8 +263,6 @@ SUB EVENT_followStop(string line, string chatSender)
 SUB EVENT_adhocCast(string line, string chatSender, string castName, string castTarget)
    /varset castName ${castName.Upper}
 
-   /echo ${castName}
-   /echo ${castTarget}
 
    /declare i int local
    /declare botName string local

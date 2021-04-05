@@ -136,7 +136,7 @@ SUB check_MedBreak
    /call checkOpenWindows
    /if (${Macro.Return}==TRUE) /return
    
-   /if (${assistTarget}!=0 && ${meleeAssist}==TRUE) /return
+   /if (${assistTarget}!=0 && (${meleeAssist}==TRUE || ${autoFireAssist}==TRUE)) /return
 
    /if (${Me.Moving}) /return
 
@@ -324,7 +324,7 @@ sub check_Roam
       /if (${assistTarget}!=0) /call setAssistOff
       
       |/moveto loc ${Spawn[${roamTargetID}].Y} ${Spawn[${roamTargetID}].X} ${Spawn[${roamTargetID}].Z} 
-      /nav id ${roamTargetID}
+      /if (${Navigation.Active}==FALSE) /nav id ${roamTargetID}
       /varset roamRefreshTimer 10
    }
 /return

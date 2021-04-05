@@ -12,11 +12,13 @@ Sub buffs_Setup
    /declare buffCheckTimer timer outer 0
    /declare forceBuffs bool outer FALSE
    /declare needsBuffPlayerQueue list outer 
+   /declare useStrictCombatCheck bool outer FALSE
 
    /call processBuffTargets
 
    /call getIniToVar "${iniFileCharacter},Misc,AcceptBuffRequests" acceptBuffRequests FALSE
    /call getIniToVar "${iniFileCharacter},Misc,BuffRequestMinimumMana" buffRequestMinimumMana 50
+   /call getIniToVar "${iniFileCharacter},Misc,UseStrictCombatCheck" useStrictCombatCheck FALSE
 
    /if (${Defined[iniBuffRequests]}==NULL || ${iniBuffRequests[1,1].Equal[-]}) /varset acceptBuffRequests FALSE
 
@@ -25,6 +27,7 @@ Sub buffs_Setup
 SUB buffCheck_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Misc,AcceptBuffRequests" NO ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Misc,BuffRequestMinimumMana" 50 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Misc,UseStrictCombatCheck" NO ${backFillOnly}
 /RETURN
 
 SUB processBuffTargets(string arrayName)
@@ -198,6 +201,9 @@ SUB processBuffs
       /if (${iniBuffs[${i},1].Equal[-]}) /break
 
       | DONT BUFF IN COMBAT UNLESS ALLOWED
+      /if (${useStrictCombatCheck}==TRUE && ${Me.CombatState.Equal[COMBAT]}) {
+         /if (${iniBuffs[${i},${bCastableDuringAssist}].Equal[-]}) /continue
+      }
       /if (${combatTimer}) {
          /if (${iniBuffs[${i},${bCastableDuringAssist}].Equal[-]}) /continue
       }
@@ -739,6 +745,6 @@ SUB EVENT_hailResponse(string line, string hailer, string hailee)
       /varset spewedSpells ${iniBuffRequests[${i},1]},${spewedSpells}
    /next i
 
-   /say Hail, ${hailer}. ${response}.
+   /say Hail, ${hailer}. ${response} (${Me.PctMana}m).
 /RETURN
 

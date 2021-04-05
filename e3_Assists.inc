@@ -5,7 +5,7 @@ SUB assist_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Assist,AutoAssist Percent" 99 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Stick Point" BEHIND ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Melee" YES ${backFillOnly}
-   /call WriteToIni "${iniFileCharacter},Assist,AuotFire" NO ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoFire" NO ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Melee Distance" 8 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Slay Index" 99 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,SlayReferencePoint" ${Me.CleanName} ${backFillOnly}
@@ -32,6 +32,8 @@ Sub assist_Setup
    /declare burnTimer timer outer 0
    /declare burnsActive bool outer FALSE
    /declare burnCheckTimer timer outer 0
+   /declare persistentAssistTags string outer
+   /declare assistTags string outer -
 
    /declare combatTimer timer outer
    /declare combatDelay int outer 70
@@ -52,7 +54,7 @@ Sub assist_Setup
    /declare assistStickPoint string outer BEHIND
    /declare dontTakeAggroFrom string outer
    /declare meleeAssist bool outer TRUE
-   /declare auotFireAssist bool outer FALSE
+   /declare autoFireAssist bool outer FALSE
    /declare autoFireMeleeMode bool outer FALSE
    /declare autoFireTankMode bool outer FALSE
    /declare assistStickDistance int outer 8
@@ -109,7 +111,7 @@ Sub assist_Setup
    /call getIniToVar "${iniFileCharacter},Assist,Stick Point" assistStickPoint BEHIND
    /call getIniToVar "${iniFileCharacter},Assist,Melee" meleeAssist YES
    /call getIniToVar "${iniFileCharacter},Assist,Melee Distance" assistStickDistance 8
-   /call getIniToVar "${iniFileCharacter},Assist,AutoFire" auotFireAssist NO
+   /call getIniToVar "${iniFileCharacter},Assist,AutoFire" autoFireAssist NO
    /call getIniToVar "${iniFileCharacter},Assist,Auto-Assist" autoAssist FALSE
    /call getIniToVar "${iniFileCharacter},Assist,AutoAssist Percent" autoAssistPercent 99
    /call getIniToVar "${iniFileCharacter},Assist,BeneficialStrip" beneficialStrip NONE
@@ -137,7 +139,7 @@ Sub assist_Setup
    
    /if (${tankMode}==TRUE) /varset assistStickPoint
 
-   /if (${auotFireAssist}==TRUE && ${meleeAssist}==TRUE)  {
+   /if (${autoFireAssist}==TRUE && ${meleeAssist}==TRUE)  {
       /if (${meleeAssist}==TRUE) /varset autoFireMeleeMode TRUE
       /if (${tankMode}==TRUE) /varset autoFireTankMode TRUE
       /varset meleeAssist FALSE
@@ -209,7 +211,7 @@ Sub assist_Background_Events
    /if (${canDoAutoAbilities}==TRUE) /call check_autoAbilities
    /if (${canDoDebuffs}==TRUE && ${Me.Moving}==FALSE && ${debuffTargetIDs.Length}>0) /call checkDebuffs
    /if (${beneficialStrip.NotEqual[NONE]} && ${doBeneficialStrip}==TRUE) /call check_Dispell
-   /if (${auotFireAssist}==TRUE && ${assistTarget}!=0) /call checkAutoFireAssist
+   /if (${autoFireAssist}==TRUE && ${assistTarget}!=0) /call checkAutoFireAssist
 /return
 
 SUB checkAutoFireAssist
@@ -576,6 +578,7 @@ SUB check_slay
    /if (${Me.Invis}==TRUE) /RETURN
    /if (${slayLockout}==TRUE) /RETURN
    /if (${checkSlayLockoutTimer}>0) /RETURN
+   /if (${autoAssistHoldTimer}>0) /RETURN
    /varset checkSlayLockoutTimer 10
 
    /if (${stickingToPlayer[]}==TRUE) /RETURN
@@ -615,9 +618,7 @@ SUB check_slay
 /RETURN
 
 SUB setAssistOn(targetID)
-
    /if (${amMeleeRetreating}==TRUE) /return
-   |/if (${autoAssistHoldTimer}>0) /return
    /if (${SpawnCount[id ${targetID}]}==0) /return
    |/if (${Spawn[id ${targetID}].Type.Equal[PC]}) /return
 
@@ -749,7 +750,6 @@ SUB setAssistOff
    /varset assistTime 0
    /varset assistTarget 0
    /varset assistBeganInZoneID 0
-   /varset autoAssistHoldTimer 1s
 /RETURN
 
 | SEE IF I SHOULD AUTO-ASSIST SOMETHING THAT A FELLOW NETBOT IS ATTACKING
@@ -800,6 +800,27 @@ SUB check_Dispell
    }
 /RETURN
 
+SUB validateAssistTags(string tagsToCheck)
+   /declare i int local
+   /declare t string local 
+   /declare matches int local 0
+   /declare res bool local TRUE
+   /declare checkTags list local
+
+   /invoke ${checkTags.Append[${tagsToCheck}]}
+   /for i 0 to ${Math.Calc[${checkTags.Count}-1]}
+      /if (${Select[${checkTags.Item[${i}]},${assistTags}]}>0) /varset matches ${Math.Calc[${matches}+1]}
+   /next i
+
+   /if (${matches} >= ${checkTags.Count}) {
+      /varset res TRUE
+   } else {
+      /varset res FALSE
+   }
+
+   /return ${res}
+/RETURN
+
 SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
 
    /varset checkAssistSpellsTimer 5
@@ -831,6 +852,20 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
 
       /if (${${processArray}[${i},${bRequireCastIdle}].NotEqual[-]}) {
          /if (${idleCastingTimer}>0) /continue
+      }
+
+      /if (${${processArray}[${i},${bNotIfAssistTag}].NotEqual[-]}) {
+         /if (${assistTags.NotEqual[-]}) {
+            /call validateAssistTags ${${processArray}[${i},${bNotIfAssistTag}]}
+            /if (${Macro.Return}==TRUE) /continue
+         }
+      }
+
+      /if (${${processArray}[${i},${bRequireAssistTag}].NotEqual[-]}) {
+         /if (${assistTags.NotEqual[-]}) {
+            /call validateAssistTags ${${processArray}[${i},${bRequireAssistTag}]}
+            /if (${Macro.Return}==FALSE) /continue
+         }
       }
 
       /if (${${processArray}[${i},${bMaxResists}].NotEqual[-]}) {
@@ -1304,13 +1339,25 @@ SUB event_debuffsOff(line, ChatSender, targetID)
 
 #event Assist "[#1#(msg)] Assist on #2#"
 #event Assist "<#1#> Assist on #2#"
-#event Assist "#1# tells you, 'Assist on #2#'"
-SUB event_Assist(line, ChatSender, string targetID)
-   /if (${NetBots[${ChatSender}].InZone} == FALSE) {
+SUB event_Assist(line, string chatSender, string params)
+   /declare tags string local
+   /declare targetID string local
+
+   /if (${params.Count[ ]}>0) {
+      /varset assistTags ${params.Token[2, ]}
+      /if (${persistentAssistTags.Length}>0) /varset assistTags ${persistentAssistTags},${assistTags}
+      /varset targetID ${params.Token[1, ]}
+   } else {
+      /varset targetID ${params}
+      /varset assistTags ${persistentAssistTags}
+   }
+
+   /if (${NetBots[${chatSender}].InZone} == FALSE) {
       /bc Cannot assist. Not in the same zoneID.
       /return
    }
 
+   /echo ::${assistTags}::
 
    /stick off
    /moveto off
@@ -1318,6 +1365,7 @@ SUB event_Assist(line, ChatSender, string targetID)
    /if (${ignoreAssistCalls}==TRUE) /return
    |/if (${tankMode}==TRUE && ${assistTarget}!=0) /return
    /if (${Spawn[${targetID}].Distance} > ${maxAssistDistance}) /return
+   /varset autoAssistHoldTimer 0
    /call setAssistOn ${targetID}
 /RETURN
 
@@ -1347,7 +1395,7 @@ SUB event_AssistQueue(line, ChatSender, int targetID)
 #event BackOff "[#1#(msg)] assist off"
 #event BackOff "#1# tells you, 'assist off'"
 SUB Event_BackOff(line, ChatSender)
-   /varset autoAssistHoldTimer 30
+   /varset autoAssistHoldTimer 3s
    /call setAssistOff
 /RETURN
 
@@ -1548,12 +1596,12 @@ SUB EVENT_campCommand(string line, string source, string newMode)
 #event toggleAutofire "<#*#> e3 autofire #1#"
 SUB EVENT_toggleAutofire(string line, string newMode)
    /if (${newMode.Upper.Equal[ON]}) {
-      /varset auotFireAssist TRUE
+      /varset autoFireAssist TRUE
       /varset meleeAssist FALSE
       /varset tankMode FALSE
       /bc Autofire is ON.
    } else /if (${newMode.Upper.Equal[OFF]}) {
-      /varset auotFireAssist FALSE
+      /varset autoFireAssist FALSE
       /if (${autoFireTankMode}==TRUE) /varset tankMode TRUE
       /if (${autoFireMeleeMode}==TRUE) /varset meleeAssist TRUE
       /bc Autofire is OFF.
@@ -1562,3 +1610,17 @@ SUB EVENT_toggleAutofire(string line, string newMode)
       /return
    }
 /RETURN
+
+
+#event setAMTags "[#*#(msg)] e3 past #1#"
+#event setAMTags "<#*#> e3 past #1#"
+SUB EVENT_setAMTags(string line, string newMode)
+   /if (${newMode.Upper.Equal[NONE]}) {
+      /varset persistentAssistTags
+      /bc Not using any persistent assist spell tags now.
+   } else {
+      /varset persistentAssistTags ${newMode}
+      /bc Persistent Assist tags are now: ${newMode}
+   }
+/RETURN
+

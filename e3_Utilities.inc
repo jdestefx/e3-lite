@@ -574,6 +574,7 @@ sub implode(string listName)
 /return
 
 
+#event cleanIniFile "[#*#] e3 clean ini"
 #event cleanIniFile "<#*#> e3 clean ini"
 sub EVENT_cleanIniFile
    /echo Backfilling INI file with missing key/values...
