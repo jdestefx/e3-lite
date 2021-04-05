@@ -1140,6 +1140,19 @@ SUB processDebuffsForTargetID(int targetID)
 
       /if (${iniDebuffs[${i},1].Equal[-]}) /goto :loopesc
 
+      /if (${iniDebuffs[${i},${bNotIfAssistTag}].NotEqual[-]}) {
+         /if (${assistTags.NotEqual[-]}) {
+            /call validateAssistTags ${iniDebuffs[${i},${bNotIfAssistTag}]}
+            /if (${Macro.Return}==TRUE) /continue
+         }
+      }
+
+      /if (${iniDebuffs[${i},${bRequireAssistTag}].NotEqual[-]}) {
+         /if (${assistTags.NotEqual[-]}) {
+            /call validateAssistTags ${iniDebuffs[${i},${bRequireAssistTag}]}
+            /if (${Macro.Return}==FALSE) /continue
+         }
+      }
 
       /if (${iniDebuffs[${i},${bTargetOverLevel}].NotEqual[-]}) {
          /if (${Spawn[id ${targetID}].Level} < ${iniDebuffs[${i},${bTargetOverLevel}]}) /goto :loopnext
