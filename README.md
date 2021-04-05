@@ -342,12 +342,12 @@ PERSISTENT ASSIST SPELL TAGS (P.A.S.T.) SYSTEM
 Command:  		/bc e3 past tag1,tag2,tag3,etc
 Recommended alias: 	/alias /past /bc e3 past 
 
-The PAST system allows you to implement behaviors for your crew that affect [AssistSpells] (heals coming later). Think of these behaviors as 
+The PAST system allows you to implement behaviors for your crew that affect [AssistSpells] and [Debuffs] (heals coming later). Think of these behaviors as 
 "stances" for your crew.
 
 Depending on the scenario (raiding, hard group content, easy group content, certain raid encounters, etc), the spells and heals we want to use
 are frequently changing.  Rather than making constant INI edits or even using alternative INIs, you can now give "signals" (or call them "stances" 
-like above - however you want to conceptualize it) to your crew that can then be mapped to entries for [AssistSpells] and [Heals].
+like above - however you want to conceptualize it) to your crew that can then be mapped to entries for [AssistSpells] and [Debuffs].
 
 Example #1:
 
