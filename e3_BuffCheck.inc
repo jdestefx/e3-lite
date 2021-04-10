@@ -208,7 +208,18 @@ SUB processBuffs
          /if (${iniBuffs[${i},${bCastableDuringAssist}].Equal[-]}) /continue
       }
 
-      | QUICK/EASY CHECKS FIRST...
+      /if (${iniBuffs[${i},${bNotIfAssistTag}].NotEqual[-]}) {
+         /if (${assistTags.NotEqual[-]}) {
+            /call validateAssistTags ${iniBuffs[${i},${bNotIfAssistTag}]} TRUE
+            /if (${Macro.Return}==TRUE) /continue
+         }
+      }
+
+      /if (${iniBuffs[${i},${bRequireAssistTag}].NotEqual[-]}) {
+         /call validateAssistTags ${iniBuffs[${i},${bRequireAssistTag}]}
+         /if (${Macro.Return}==FALSE) /continue
+      }
+
       /if (${iniBuffs[${i},${bRequireCastIdle}].NotEqual[-]}) {
          /if (${idleCastingTimer}>0) /continue
       }

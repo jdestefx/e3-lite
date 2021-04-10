@@ -801,7 +801,7 @@ SUB check_Dispell
    }
 /RETURN
 
-SUB validateAssistTags(string tagsToCheck)
+SUB validateAssistTags(string tagsToCheck, bool asOrOperator)
    /declare i int local
    /declare t string local 
    /declare matches int local 0
@@ -823,7 +823,9 @@ SUB validateAssistTags(string tagsToCheck)
       /if (${fullTags.Contains[${checkTags.Item[${i}]}]}) /varset matches ${Math.Calc[${matches}+1]}
    /next i
 
-   /if (${matches} >= ${checkTags.Count}) {
+   /if (${asOrOperator}==TRUE && ${matches}>0) {
+      /varset res TRUE
+   } else /if (${matches} >= ${checkTags.Count}) {
       /varset res TRUE
    } else {
       /varset res FALSE
@@ -867,7 +869,7 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
 
       /if (${${processArray}[${i},${bNotIfAssistTag}].NotEqual[-]}) {
          /if (${assistTags.NotEqual[-]}) {
-            /call validateAssistTags ${${processArray}[${i},${bNotIfAssistTag}]}
+            /call validateAssistTags ${${processArray}[${i},${bNotIfAssistTag}]} TRUE
             /if (${Macro.Return}==TRUE) /continue
          }
       }
@@ -1152,7 +1154,7 @@ SUB processDebuffsForTargetID(int targetID)
 
       /if (${iniDebuffs[${i},${bNotIfAssistTag}].NotEqual[-]}) {
          /if (${assistTags.NotEqual[-]} || ${persistentAssistTags.NotEqual[-]}) {
-            /call validateAssistTags ${iniDebuffs[${i},${bNotIfAssistTag}]}
+            /call validateAssistTags ${iniDebuffs[${i},${bNotIfAssistTag}]} TRUE
             /if (${Macro.Return}==TRUE) /continue
          }
       }
