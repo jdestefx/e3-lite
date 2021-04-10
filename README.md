@@ -11,6 +11,7 @@ EQBC Channels=team casters ranged			; Channels to be automatically assigned to u
 Tell Relay=/bc <who> told me <msg>			; Command to perform whenever a tell is received. <who> and <msg> are replaced with actual values.
 AcceptBuffRequests=NO					; [YES|NO] Allow people to request buffs in [BuffRequests] section via tells.
 BuffRequestMinimumMana=30				; [% MANA] Must have this much mana before performing buff requests.
+UseStrictCombatCheck=NO					; Determines what mechanism should control combat detection. E3's or EQ's combat state indicator.
 
 [Assist]
 AutoDisarm=YES						; [YES/NO] Looks for traps within 75 units and attemps to automatically use "Disarm Traps" on it.
@@ -27,7 +28,8 @@ BeneficialStrip=NONE 					; (ITEM/SPELL NAME) If a beneficial spell is detected 
 Tank=NO							; [YES/NO] Whether or not this character should behave as a tank.  Used in conjunction with [AggroAbilities] section.
 DontTakeAggroFrom=NONE					; (COMMA SEPARATED PC NAMES) A list of names of people to not take aggro from when tank logic is on.
 MaxAssistDistance=1000					; [INT] Distance to target at which assist calls will be ignored.
-OnSlayAssistCommand=NONE				; (COMMAND) A command to execute when a character shifts onto a slay target.  "/bc debuffs on !!{Target.ID}" is a useful one.
+OnSlayAssistCommand=NONE				; (COMMAND) A command to execute when a character shifts onto a slay target.  "/bc debuffs on !!{Target.ID}" is a
+							; useful one.
 							; Notice !! instead of $ for dynamic commands. 
 IgnoreAssistCalls=NO 					; (YES/NO) Provides a global mechanism to make a character ignore assist calls.
 MaintainAssistLOS=NO					; If LOS is lost during assist, attempt to /nav to the target.
@@ -39,17 +41,21 @@ CharmBreakCommand=NONE					; [COMMAND] Provides a custom mechanism for performin
 							; (ehg. /bct clerics //casting `stun command` -targetid|!!{Target.ID})
 AutoMez=NO						; [YES|NO] Toggle for automez logic.
 AutoMezSpell=NONE					; [SPELL NAME] Name of the mez spell or spells (comma separated) to use for automez. 
-AutoMezSpawnSearch=npc radius 50 los range 1 60		; [SPAWN SEARCH] The spawn search criteria for identifying mobs to automez. Range is the level range. Obviously stay under your mez spell's limit.
+AutoMezSpawnSearch=npc radius 50 los range 1 60		; [SPAWN SEARCH] The spawn search criteria for identifying mobs to automez. Range is the level range. Obviously 
+							; stay under your mez spell's limit.
 AutoMezTimerMarginSeconds=10				; [INT] Adjust re-mez time by adding margin here. Use seconds (without "s" at the end).
 
 
 Details about "slay" mode:
-Slay mode is a mechanism to have bots automatically off-tank mobs near your crew. To use, each potential off-tank character INI needs to have a SlayIndex value, starting at 1 and incrementing up for each toon. The SlayReferencePoint is used as the point of origin when trying to get a uniform list of mobs in proximity.  For best results, use the name of the toon in SlayIndex=1 position and make it the same name in all bot INIs who will be participating in slay mode.
+Slay mode is a mechanism to have bots automatically off-tank mobs near your crew. To use, each potential off-tank character INI needs to have a SlayIndex value, 
+starting at 1 and incrementing up for each toon. The SlayReferencePoint is used as the point of origin when trying to get a uniform list of mobs in proximity. 
+For best results, use the name of the toon in SlayIndex=1 position and make it the same name in all bot INIs who will be participating in slay mode.
 
 
 [Buffs]
 
-Buffs are spells that will be casted on any character in your EQBCS server and uses mq2netbots to determining readiness. Buffs are only casted out of combat unless otherwise specified using the combat-related flags below.
+Buffs are spells that will be casted on any character in your EQBCS server and uses mq2netbots to determining readiness. Buffs are only casted out of combat unless
+otherwise specified using the combat-related flags below.
 
 Example entry:
 Visions of Grandeur=SelfOverMana:25|Targets:@Monks,Penrilgone|TargetOverLevel:45|CastableDuringAssist
@@ -124,7 +130,8 @@ NoSitTimer				Prevents sitting (if medidate is on) for this amount of time after
 					Can be several formats: 50 = 5 seconds.  5s = 5 seconds.
 RecastDelay 				Adds a delay between casting this spell entry as to not drain mana too fast. Use deci-seconds only.
 					ie.  50 = 5 seconds.  Does not support "5s" syntax.
-TargetLifeManaRatio			Uses the Assist Target's life as a gauge for when/if this spell can cast.  A value of 2 will prevent the bot from going under 50m casting this entry. 2.5, 3, etc will keep more mana.
+TargetLifeManaRatio			Uses the Assist Target's life as a gauge for when/if this spell can cast. 
+					A value of 2 will prevent the bot from going under 50m casting this entry. 2.5, 3, etc will keep more mana.
 
 [AssistSpells]
 These are the spells that will be casted on the singular assist target, triggered when a character sees "assist on [spawnID]"
@@ -142,11 +149,14 @@ Gift of Pure Thought=Keyword:Mana|SelfOverMana:30|RequireTargetClass:CLR,DRU,SHM
 Group Resist Magic=Keyword:GMR|SelfOverMana:30
 
 Emotable buffs:
-Using the keyword "emotable" with a buff request will trigger a bot to respond to somebody doing an emote:  /em needs buffs, or when they see somebody "/say Soandso needs buffs"
+Using the keyword "emotable" with a buff request will trigger a bot to respond to somebody doing an emote:  /em needs buffs, or when they
+see somebody "/say Soandso needs buffs"
 
 
 [Heals]
-Heals will evaluate all characters in your EQBCS server, group (if specified), and XTarget (if specified) and uses mq2netbots for determining readiness.  [Heals] is also how you will configure poison and disease cures (for now).  Keep in mind that heals are processed in order and, once a heal is performed, the process restarts at the top of the stack.
+Heals will evaluate all characters in your EQBCS server, group (if specified), and XTarget (if specified) and uses mq2netbots for determining 
+readiness.  [Heals] is also how you will configure poison and disease cures (for now).  Keep in mind that heals are processed in order and, once a
+heal is performed, the process restarts at the top of the stack.
 
 Example enties:
 Word of Restoration=HealPct:100|RequireHurtPartyMembers:3@70|NoCancelChecks|NoSitTimer:100
@@ -322,5 +332,69 @@ Attempt to charm and keep charmed the specified spawn id, or deactivate charm lo
 /bc e3 automez [on|off]
 Toggle automez logic.
 
+
+
+
+==============================================
+PERSISTENT ASSIST SPELL TAGS (P.A.S.T.) SYSTEM
+==============================================
+
+Command:  		/bc e3 past tag1,tag2,tag3,etc
+Recommended alias: 	/alias /past /bc e3 past 
+
+The PAST system allows you to implement behaviors for your crew that affect [AssistSpells] and [Debuffs] (heals coming later). Think of these behaviors as 
+"stances" for your crew.
+
+Depending on the scenario (raiding, hard group content, easy group content, certain raid encounters, etc), the spells and heals we want to use
+are frequently changing.  Rather than making constant INI edits or even using alternative INIs, you can now give "signals" (or call them "stances" 
+like above - however you want to conceptualize it) to your crew that can then be mapped to entries for [AssistSpells] and [Debuffs].
+
+Example #1:
+
+	I have 3 clerics that are usually doing nothing during easy trash clears on raids.  I would like them to nuke, but only during raid trash 
+	clears that I feel are "easy" trash pulls, and I want to be able to disable their nukes (quickly) once we enounter difficult trash pulls so they
+	focus purely on healing.
+
+	On my driver toon, I would just type /past raid,trash,easy
+
+	Then add the following tags to the cleric nuke entry:
+
+	[AssistSpells]
+	Judgment=TargetOverHP:40|RequireAssistTag:trash,easy
+
+	Note: When multiple tags are specified in a spell entry, AND is implied. Meaning this entry is only performed if both tags were turned 
+	"on" with the /past command.
+
+	With that setup, once we get to hard content or a bad trash pull, I can just type /past boss (or simply any new set of tags - or none 
+	at all - the point being to remove "trash" or "easy" to disqualify the nuke entry.
+
+
+Example #2 (using on-the-fly PAST tags with your 'assist on' command):
+
+	I have a dot lineup on my druid with all the typical dots you'd expect.  We're at Avatar of War which I know is fire immune, so I 
+	don't want to waste mana on the Breath of Ro DOT.
+
+	1) Adjust your "e3 assist on ${Target.ID}" button to include more values after the ${Target.ID}.  Consider this adjustment to your  assist button as a
+	FULL TIME change.
+	
+		For example, my button now includes basic details (space-separated) about what I just called assist on:
+		/bc e3 assist on ${Target.ID} ${Target.Name} ${Zone.ShortName}
+
+		This would create a command that looks something like --> "e3 assist on 1234 The_Avatar_of_War00 kael"
+
+		It's important that I used Target.Name and not Target.CleanName, otherwise I'd get a version of AOW with spaces in his name. Same with
+		Zone.Name/Zone.ShortName.
+
+	2) Next, map an exclusionary PAST tag to the BOR entry:
+
+		Breath of Ro#1=MaxResists:1|TargetOverHP:40|NotIfAssistTag:The_Avatar_of_War00
+
+
+	Now as soon as I hit my assist button for AOW, all the pieces are in place to disqualify the BOR dot.
+
+
+
+In summary, think about what you're trying to accomplish and think of the best way to cover a wide spectrum of situations with the fewest tags.  Implementations 
+from one crew to the next could be totally different.
 
 
