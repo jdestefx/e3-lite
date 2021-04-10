@@ -32,8 +32,8 @@ Sub assist_Setup
    /declare burnTimer timer outer 0
    /declare burnsActive bool outer FALSE
    /declare burnCheckTimer timer outer 0
-   /declare persistentAssistTags string outer -
-   /declare assistTags string outer -
+   /declare persistentAssistTags list outer
+   /declare assistTags list outer
 
    /declare combatTimer timer outer
    /declare combatDelay int outer 70
@@ -809,12 +809,12 @@ SUB validateAssistTags(string tagsToCheck, bool asOrOperator)
    /declare checkTags list local
    /declare fullTags list local
 
-   /if (${assistTags.NotEqual[-]}) {
+   /if (${assistTags.Count}>0) {
       /invoke ${fullTags.Append[${assistTags}]}
    }
 
-   /if (${persistentAssistTags.NotEqual[-]}) {
-      /invoke ${fullTags.Append[${persistentAssistTags}]}
+   /if (${persistentAssistTags.Count}>0) {
+      /invoke ${fullTags.Append[${implode[persistentAssistTags]}]}
    }
 
    /invoke ${checkTags.Append[${tagsToCheck}]}
@@ -868,13 +868,14 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
       }
 
       /if (${${processArray}[${i},${bNotIfAssistTag}].NotEqual[-]}) {
-         /if (${assistTags.NotEqual[-]}) {
+         /if (${assistTags.Count}>0 || ${persistentAssistTags.Count}>0) {
             /call validateAssistTags ${${processArray}[${i},${bNotIfAssistTag}]} TRUE
             /if (${Macro.Return}==TRUE) /continue
          }
       }
 
       /if (${${processArray}[${i},${bRequireAssistTag}].NotEqual[-]}) {
+         /if (${assistTags.Count}==0 && ${persistentAssistTags.Count}==0) /continue
          /call validateAssistTags ${${processArray}[${i},${bRequireAssistTag}]}
          /if (${Macro.Return}==FALSE) /continue
       }
@@ -1153,13 +1154,14 @@ SUB processDebuffsForTargetID(int targetID)
 
 
       /if (${iniDebuffs[${i},${bNotIfAssistTag}].NotEqual[-]}) {
-         /if (${assistTags.NotEqual[-]} || ${persistentAssistTags.NotEqual[-]}) {
+         /if (${assistTags.Count}>0 || ${persistentAssistTags.Count}>0) {
             /call validateAssistTags ${iniDebuffs[${i},${bNotIfAssistTag}]} TRUE
             /if (${Macro.Return}==TRUE) /continue
          }
       }
 
       /if (${iniDebuffs[${i},${bRequireAssistTag}].NotEqual[-]}) {
+         /if (${assistTags.Count}==0 && ${persistentAssistTags.Count}==0) /continue
          /call validateAssistTags ${iniDebuffs[${i},${bRequireAssistTag}]}
          /if (${Macro.Return}==FALSE) /continue
       }
@@ -1367,7 +1369,8 @@ SUB event_Assist(line, string chatSender, string params)
    /declare targetID string local
 
    /if (${params.Count[ ]}>0) {
-      /varset assistTags ${params.Token[2, ]}
+      /invoke ${assistTags.Clear}
+      /invoke ${assistTags.Append[${params.Token[2, ]}]}
       /varset targetID ${params.Token[1, ]}
    }
 
@@ -1631,13 +1634,46 @@ SUB EVENT_toggleAutofire(string line, string newMode)
 
 #event setAMTags "[#*#(msg)] e3 past #1#"
 #event setAMTags "<#*#> e3 past #1#"
-SUB EVENT_setAMTags(string line, string newMode)
-   /if (${newMode.Upper.Equal[NONE]}) {
-      /varset persistentAssistTags
+SUB EVENT_setAMTags(string line, string newTags)
+   /if (${newTags.Upper.Equal[NONE]} || ${newTags.Upper.Equal[CLEAR]}) {
+      /invoke ${persistentAssistTags.Clear}
       /bc Not using any persistent assist spell tags now.
    } else {
-      /varset persistentAssistTags ${newMode}
-      /bc Persistent Assist tags are now: ${newMode}
+      /invoke ${persistentAssistTags.Clear}
+      /invoke ${persistentAssistTags.Append[${newTags}]}
+      /bc Persistent Assist tags are now: ${newTags}
    }
 /RETURN
+
+#event addPASTTags "[#*#(msg)] e3 pastadd #1#"
+#event addPASTTags "<#*#> e3 pastadd #1#"
+SUB EVENT_addPASTTags(string line, string newTags)
+   /declare i int local 
+   /declare tok string local
+
+   /for i 1 to ${Math.Calc[${newTags.Count[,]}+1]}
+      /varset tok ${newTags.Token[${i},,]}
+      /if (${persistentAssistTags.Contains[${tok.Lower}]}==FALSE) {
+         /invoke ${persistentAssistTags.Append[${tok}]}
+         /bc Adding ${tok} to persistent assist tags.
+      }
+   /next i
+/RETURN
+
+
+#event remPASTTags "[#*#(msg)] e3 pastrem #1#"
+#event remPASTTags "<#*#> e3 pastrem #1#"
+SUB EVENT_remPASTTags(string line, string remTags)
+   /declare i int local 
+   /declare tok string local
+
+   /for i 1 to ${Math.Calc[${remTags.Count[,]}+1]}
+      /varset tok ${remTags.Token[${i},,]}
+      /if (${persistentAssistTags.Contains[${tok.Lower}]}==TRUE) {
+         /invoke ${persistentAssistTags.Remove[${tok}]}
+         /bc Removed ${tok} from persistent assist tags.
+      }
+   /next i
+/RETURN
+
 

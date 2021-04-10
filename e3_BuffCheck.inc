@@ -209,13 +209,14 @@ SUB processBuffs
       }
 
       /if (${iniBuffs[${i},${bNotIfAssistTag}].NotEqual[-]}) {
-         /if (${assistTags.NotEqual[-]}) {
+         /if (${assistTags.Count}>0 || ${persistentAssistTags.Count}>0) {
             /call validateAssistTags ${iniBuffs[${i},${bNotIfAssistTag}]} TRUE
             /if (${Macro.Return}==TRUE) /continue
          }
       }
 
       /if (${iniBuffs[${i},${bRequireAssistTag}].NotEqual[-]}) {
+         /if (${assistTags.Count}==0 && ${persistentAssistTags.Count}==0) /continue
          /call validateAssistTags ${iniBuffs[${i},${bRequireAssistTag}]}
          /if (${Macro.Return}==FALSE) /continue
       }

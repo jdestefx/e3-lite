@@ -179,6 +179,19 @@ SUB checkHeals
 			/if (${idleCastingTimer}>0) /continue
 		}
 
+		/if (${iniHeals[${i},${bNotIfAssistTag}].NotEqual[-]}) {
+			/if (${assistTags.Count}>0 || ${persistentAssistTags.Count}>0) {
+				/call validateAssistTags ${iniHeals[${i},${bNotIfAssistTag}]} TRUE
+				/if (${Macro.Return}==TRUE) /continue
+			}
+		}
+
+		/if (${iniHeals[${i},${bRequireAssistTag}].NotEqual[-]}) {
+			/if (${assistTags.Count}==0 && ${persistentAssistTags.Count}==0) /continue
+			/call validateAssistTags ${iniHeals[${i},${bRequireAssistTag}]}
+			/if (${Macro.Return}==FALSE) /continue
+		}
+
 		/if (${iniHeals[${i},${bCastableOnlyResting}].NotEqual[-]}) {
 			/if (${Me.CombatState.Equal[COMBAT]}) /goto :loopnexti
 		}
