@@ -339,8 +339,14 @@ Toggle automez logic.
 PERSISTENT ASSIST SPELL TAGS (P.A.S.T.) SYSTEM
 ==============================================
 
-Command:  		/bc e3 past tag1,tag2,tag3,etc
-Recommended alias: 	/alias /past /bc e3 past 
+Commands:  		/bc e3 past tag1,tag2,    (set tags)
+			/bc e3 pastadd tagx,tagy  (add tag(s) to existing tags)
+			/bc e3 pastrem tagw,tagz  (rem tag(s) from existing tags)
+
+Recommended aliases:	/alias /past /bc e3 past 
+			/alias /pasta /bc e3 pastadd 
+			/alias /pastr /bc e3 pastrem 
+			
 
 The PAST system allows you to implement behaviors for your crew that affect [AssistSpells] and [Debuffs] (heals coming later). Think of these behaviors as 
 "stances" for your crew.
