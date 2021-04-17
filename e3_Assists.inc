@@ -1365,19 +1365,19 @@ SUB event_debuffsOff(line, ChatSender, targetID)
 #event Assist "[#1#(msg)] Assist on #2#"
 #event Assist "<#1#> Assist on #2#"
 SUB event_Assist(line, string chatSender, string params)
-   /declare tags string local
    /declare targetID string local
-
-   /if (${params.Count[ ]}>0) {
-      /invoke ${assistTags.Clear}
-      /invoke ${assistTags.Append[${params.Token[2, ]}]}
-      /varset targetID ${params.Token[1, ]}
-   }
 
    /if (${NetBots[${chatSender}].InZone} == FALSE) {
       /bc Cannot assist. Not in the same zoneID.
       /return
    }
+
+   /if (${params.Count[ ]}>0) {
+      /invoke ${assistTags.Clear}
+      /invoke ${assistTags.Append[${params.Token[2, ]}]}
+   }
+
+   /varset targetID ${params.Token[1, ]}
 
    /stick off
    /moveto off

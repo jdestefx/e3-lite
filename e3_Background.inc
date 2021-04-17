@@ -235,7 +235,9 @@ SUB EVENT_followMe(string line, string chatSender, string stickOpts)
    /if (${Spawn[pc ${chatSender}].ID}==NULL) /return
    /if (${Spawn[pc ${chatSender}].Distance}>1000) /return
 
+   /varset autoAssistHoldTimer 3s
    /call setAssistOff
+   
    /if (${Me.Class.ShortName.NotEqual[BRD]}) /interrupt
    /echo /stick id ${Spawn[pc ${chatSender}].ID} ${stickOpts}
    /stick id ${Spawn[pc ${chatSender}].ID} ${stickOpts}
