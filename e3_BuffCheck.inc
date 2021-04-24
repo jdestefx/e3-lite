@@ -54,7 +54,7 @@ SUB processBuffTargets(string arrayName)
          /varset removeTargets ${Macro.Return}
 
          /for j 1 to ${Math.Calc[${removeTargets.Count[|]}+1]}
-            /call removeFromPSV "${finalTargets}" "${removeTargets.Token[${j},|]}"
+            /call removeToken "${finalTargets}" "${removeTargets.Token[${j},|]}" "|" "|"
             /varset finalTargets ${Macro.Return}
          /next j
       }

@@ -575,29 +575,20 @@ sub implode(string listName, string delim)
 /return
 
 
-sub removeFromPSV(string src, string removeVal)
-	/declare rpo ${Math.Calc[${removeVal.Length}+1]}
+sub removeToken(string src, string searchVal, string inDelim, string outDelim)
+	/if (${inDelim.Length}==0) /varset delim ,
+	/if (${outDelim.Length}==0) /varset outDelim ${inDelim}
 
-	:tryAgain
+	/declare i int local
+	/declare r string local
 
-	/if (${src.Right[${rpo}].Equal[|${removeVal}]}) {
-		/varset src ${src.Left[-${rpo}]}
-		/goto :tryAgain
-	}
+	/for i 1 to ${Math.Calc[${src.Count[${inDelim}]}+1]}
+		/echo ${src.Token[${i},${inDelim}]}
+		/if (${src.Token[${i},${inDelim}].Equal[${searchVal}]}) /continue
+		/varset r ${r}${outDelim}${src.Token[${i},${inDelim}]}
+	/next i
 
-	/if (${src.Left[${rpo}].Equal[${removeVal}|]}) {
-		/varset src ${src.Right[-${rpo}]}
-		/goto :tryAgain
-	}
-
-	/if (${src.Find[|${removeVal}|]}!=NULL) {
-		/echo found
-		/varset src ${src.Replace[|${removeVal}|,|]}
-		/goto :tryAgain
-	}
-
-	/return ${src}
-
+	/return ${r.Right[-1]}
 /return
 
 

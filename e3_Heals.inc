@@ -27,33 +27,33 @@ SUB processHealTargets
 	/if (${Defined[iniHeals]}==FALSE) /return
 
 	/declare i int local 1
-	/declare e string local 
-	/declare j int local 1
-	/declare sectionText string local
-	/declare sectionValue string local
-	/declare checkDefinitionName string local
+	/declare j int local
+	/declare finalTargets string local
+	/declare removeTargets string local
 
 	/for i 1 to 64
-		/if (${iniHeals[${i},1].Equal[-]}) /goto :loopesc
+		/if (${iniHeals[${i},1].Equal[-]}) /continue
 
 		/if (${iniHeals[${i},${bTargets}].NotEqual[-]}) {
 			/call processTargets "${iniHeals[${i},${bTargets}]}"
-			/varset iniHeals[${i},${bTargets}] ${Macro.Return}
+			/varset finalTargets ${Macro.Return}
 		} else {
-			/varset iniHeals[${i},${bTargets}] ${allNetbotNames}
+			/varset finalTargets ${allNetbotNames}
 		}
 
-		/varset iniHeals[${i},${bTargets}] ${iniHeals[${i},${bTargets}].Replace[|,,]}			
+		/if (${iniHeals[${i},${bExcludeTargets}].NotEqual[-]}) {
+			/call processTargets "${iniHeals[${i},${bExcludeTargets}]}"
+			/varset removeTargets ${Macro.Return}
+			/for j 1 to ${Math.Calc[${removeTargets.Count[|]}+1]}
+				/call removeToken "${finalTargets}" "${removeTargets.Token[${j},,]}" "|" ","
+				/varset finalTargets ${Macro.Return}
+			/next j
+		}
 
-		|/if (${iniHeals[${i},${bExcludeTargets}].NotEqual[-]}) {
-		|	/call processTargets "${iniHeals[${i},${bExcludeTargets}]}"
-		|	/varset iniHeals[${i},${bExcludeTargets}] ${Macro.Return}
-		|}
-		|
-		|/varset iniHeals[${i},${bExcludeTargets}] ${Macro.Return.Replace[|,,]}
+		/varset iniHeals[${i},${bTargets}] ${finalTargets}
 
 	/next i
-	:loopesc
+
 /RETURN
 
 SUB heal_Background_Events
