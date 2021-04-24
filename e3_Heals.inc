@@ -45,12 +45,13 @@ SUB processHealTargets
 			/call processTargets "${iniHeals[${i},${bExcludeTargets}]}"
 			/varset removeTargets ${Macro.Return}
 			/for j 1 to ${Math.Calc[${removeTargets.Count[|]}+1]}
-				/call removeToken "${finalTargets}" "${removeTargets.Token[${j},,]}" "|" ","
+				/call removeToken "${finalTargets}" "${removeTargets.Token[${j},,]}" "|" "|"
 				/varset finalTargets ${Macro.Return}
 			/next j
 		}
 
-		/varset iniHeals[${i},${bTargets}] ${finalTargets}
+		| CODE ELSEWHERE REQUIRES HEALTARGETS TO BE CSV
+		/varset iniHeals[${i},${bTargets}] ${finalTargets.Replace[|,,]} 
 
 	/next i
 
