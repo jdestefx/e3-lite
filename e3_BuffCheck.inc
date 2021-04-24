@@ -34,29 +34,35 @@ SUB processBuffTargets(string arrayName)
    /if (${Defined[iniBuffs]}==FALSE) /return
 
    /declare i int local 1
-   /declare e string local 
-   /declare j int local 1
-   /declare sectionText string local
-   /declare sectionValue string local
-   /declare checkDefinitionName string local
+   /declare j int local
+   /declare finalTargets string local
+   /declare removeTargets string local
 
    /for i 1 to 64
-      /if (${iniBuffs[${i},1].Equal[-]}) /goto :loopesc
+      /if (${iniBuffs[${i},1].Equal[-]}) /continue
 
       /if (${iniBuffs[${i},${bTargets}].NotEqual[-]}) {
          /call processTargets "${iniBuffs[${i},${bTargets}]}"
-         /varset iniBuffs[${i},${bTargets}] ${Macro.Return}
+         /varset finalTargets ${Macro.Return}
       } else {
-         /varset iniBuffs[${i},${bTargets}] ${allNetbotNames}
+         /varset finalTargets ${allNetbotNames}
       }
 
       /if (${iniBuffs[${i},${bExcludeTargets}].NotEqual[-]}) {
+
          /call processTargets "${iniBuffs[${i},${bExcludeTargets}]}"
-         /varset iniBuffs[${i},${bExcludeTargets}] ${Macro.Return}
+         /varset removeTargets ${Macro.Return}
+
+         /for j 1 to ${Math.Calc[${removeTargets.Count[|]}+1]}
+            /call removeFromPSV "${finalTargets}" "${removeTargets.Token[${j},|]}"
+            /varset finalTargets ${Macro.Return}
+         /next j
       }
 
+      /varset iniBuffs[${i},${bTargets}] ${finalTargets}
+
    /next i
-   :loopesc
+
 /RETURN
 
 Sub buffCheck_Background_Events

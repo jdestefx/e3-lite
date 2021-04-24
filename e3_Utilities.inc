@@ -559,7 +559,8 @@ SUB memorizeSpellInGem(string spellName, int gemNumber)
 	/delay 35 ${Me.SpellReady[${spellName}]}
 /RETURN
 
-sub implode(string listName)
+sub implode(string listName, string delim)
+	/if (${delim.Length}==0) /varset delim ,
 	/declare i int local
 	/declare max int local ${Math.Calc[${${listName}.Count}-1]}
 	/if (${max}<0) /return NULL
@@ -567,10 +568,36 @@ sub implode(string listName)
 	/declare r string local
 
 	/for i 0 to ${max}
-		/varset r ${r},${${listName}.Item[${i}]}
+		/varset r ${r}${delim}${${listName}.Item[${i}]}
 	/next i
 
 	/return ${r.Right[-1]}
+/return
+
+
+sub removeFromPSV(string src, string removeVal)
+	/declare rpo ${Math.Calc[${removeVal.Length}+1]}
+
+	:tryAgain
+
+	/if (${src.Right[${rpo}].Equal[|${removeVal}]}) {
+		/varset src ${src.Left[-${rpo}]}
+		/goto :tryAgain
+	}
+
+	/if (${src.Left[${rpo}].Equal[${removeVal}|]}) {
+		/varset src ${src.Right[-${rpo}]}
+		/goto :tryAgain
+	}
+
+	/if (${src.Find[|${removeVal}|]}!=NULL) {
+		/echo found
+		/varset src ${src.Replace[|${removeVal}|,|]}
+		/goto :tryAgain
+	}
+
+	/return ${src}
+
 /return
 
 

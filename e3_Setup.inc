@@ -63,6 +63,7 @@ SUB e3_Setup(string iniSuffix)
    /declare bName string outer 1
    /declare bValue string outer 2
    /declare bTargets string outer 3
+   /declare bExcludeTargets string outer 4
    /declare bTargetOverLevel string outer 6
    /declare bCastableDuringAssist string outer 7
    /declare bSelfOverHP string outer 8
