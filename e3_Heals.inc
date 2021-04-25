@@ -405,13 +405,13 @@ SUB getNetBotReadyForHeal(int healPct, int iniHealIndex)
 
 		/if (${NetBots[${netbotName}].Invulnerable}==1) /continue
 
+		/if (${iniHeals[${iniHealIndex},${bTargets}].NotEqual[-]}) {
+			/if (${Select[${netbotName},${iniHeals[${iniHealIndex},${bTargets}]}]}==0) /continue
+		}
+
 		/if (${iniHeals[${iniHealIndex},${bCheckShortBuffs}].NotEqual[-]}) {
 			/vardata healSpell ${e3_getSpellByCastRequestName[${iniHeals[${iniHealIndex},1]}]}
 			/if (${NetBots[${netbotName}].ShortBuff.Find[${healSpell.ID}]}!=0) /continue
-		}
-
-		/if (${iniHeals[${iniHealIndex},${bTargets}].NotEqual[-]}) {
-			/if (${Select[${netbotName},${iniHeals[${iniHealIndex},${bTargets}]}]}==0) /continue
 		}
 
 		/if (${iniHeals[${iniHealIndex},${bRequireGroup}].NotEqual[-]}) {

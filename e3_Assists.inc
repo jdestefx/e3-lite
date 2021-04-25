@@ -100,6 +100,7 @@ Sub assist_Setup
 
    /declare campCheckTimer timer outer 
    /declare campEnabled bool outer FALSE
+   /declare campStartZoneID int outer 
    /declare campX int outer
    /declare campY int outer   
    /declare campZ int outer
@@ -241,6 +242,11 @@ SUB checkAutoFireAssist
 SUB checkCamp 
    /if (${campCheckTimer}>0) /RETURN
    /varset campCheckTimer 5
+   
+   /if (${Zone.ID}!=${campStartZoneID}) {
+      /call stopCamping
+      /return
+   }
 
    /if (${Stick.Active}==TRUE || ${Navigation.Active}==TRUE) /RETURN
    /if (${combatTimer}>0) /RETURN
@@ -603,14 +609,14 @@ SUB check_slay
       }
    /next i
 
-   /bc MSI: ${slayProxIDs.Item[${slayIndex}]}  (${slayIndex})  Lockout=${slayLockout}
+   |/bc MSI: ${slayProxIDs.Item[${slayIndex}]}  (${slayIndex})  Lockout=${slayLockout}
 
    /if (${slayProxIDs.Item[${slayIndex}]}==FALSE) /return
 
-   /bc SPIDs: ${slayProxIDs.Item[0]} ${slayProxIDs.Item[1]} ${slayProxIDs.Item[2]} ${slayProxIDs.Item[3]} ${slayProxIDs.Item[4]}
+   |/bc SPIDs: ${slayProxIDs.Item[0]} ${slayProxIDs.Item[1]} ${slayProxIDs.Item[2]} ${slayProxIDs.Item[3]} ${slayProxIDs.Item[4]}
 
    /if (${slayLockout}==FALSE) {
-      /bc Engaging SlayIndex[${slayIndex}] on${slayProxIDs.Item[${slayIndex}]}
+      |/bc Engaging SlayIndex[${slayIndex}] on${slayProxIDs.Item[${slayIndex}]}
       /call setAssistOn ${slayProxIDs.Item[${slayIndex}]}
       /varset slayLockout TRUE
       /if (${onSlayAssistCommand.NotEqual[NONE]}) /call e3command "${onSlayAssistCommand}"
@@ -1327,6 +1333,13 @@ SUB fullTarget(int targetID)
 /RETURN
 
 
+SUB stopCamping
+   /if (${campEnabled}==TRUE) {
+      /varset campEnabled FALSE
+      /bc Camp mode disabled.
+   }
+/RETURN
+
 #EVENT DebuffsOn "<#1#> Debuffs on #2#"
 #EVENT DebuffsOn "#1# tells you, 'Debuffs on #2#'"
 #EVENT DebuffsOn "#1# tells the group, 'Debuffs on #2#'"
@@ -1589,8 +1602,8 @@ SUB EVENT_campCommand(string line, string source, string newMode)
    }
    
    /if (${newMode.Upper.Equal[OFF]}) {
-      /varset campEnabled FALSE
-      /bc Camp mode disabled.
+      /call stopCamping
+      /return
    }
 
    /if (${newMode.Upper.Equal[HERE]}) {
@@ -1598,6 +1611,7 @@ SUB EVENT_campCommand(string line, string source, string newMode)
       /varset campY ${Spawn[${source}].Y}
       /varset campZ ${Spawn[${source}].Z}
       /varset campEnabled TRUE
+      /varset campStartZoneID ${Zone.ID}
       /bc Now camping at ${source} location.
    }
 
@@ -1606,6 +1620,7 @@ SUB EVENT_campCommand(string line, string source, string newMode)
       /varset campY ${Me.Y}
       /varset campZ ${Me.Z}
       /varset campEnabled TRUE
+      /varset campStartZoneID ${Zone.ID}
       /bc Now camping at my location.
    }
 

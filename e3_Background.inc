@@ -235,6 +235,8 @@ SUB EVENT_followMe(string line, string chatSender, string stickOpts)
    /if (${Spawn[pc ${chatSender}].ID}==NULL) /return
    /if (${Spawn[pc ${chatSender}].Distance}>1000) /return
 
+   /call stopCamping
+
    /varset autoAssistHoldTimer 3s
    /call setAssistOff
    
