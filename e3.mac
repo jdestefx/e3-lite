@@ -58,7 +58,7 @@ SUB Main()
 			/if (${assistTarget}!=0) /call setAssistOff
 			/goto :mainLoopStart
 		}
-		|/if (${Me.Feigning}==TRUE) /timed 15 /stand
+		/if (${Me.Feigning}==TRUE) /timed 15 /stand
 
 		/if (!${MacroQuest.GameState.Equal[INGAME]}) /end
 		/if (!${Bool[${Me.Class}]}) /endmacro

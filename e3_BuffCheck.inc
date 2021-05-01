@@ -257,6 +257,10 @@ SUB processBuffs
       /if (${iniBuffs[${i},${bSelfOverEnd}].NotEqual[-]}) {
          /if (${Me.PctEndurance} < ${iniBuffs[${i},${bSelfUnderEnd}]} ) /continue
       }
+      /if (${iniBuffs[${i},${bRequireMobsInProximity}].NotEqual[-]}) {
+         /if (${SpawnCount[npc loc ${Me.X} ${Me.Y} radius 45]} < ${iniBuffs[${i},${bRequireMobsInProximity}]}) /continue
+      }
+
 
       | OBTAIN BUFF SPELL DETAIL
       /varset buffCastName ${iniBuffs[${i},${bName}]}

@@ -320,7 +320,7 @@ Sub basics_Aliases
 
 
 sub check_Roam
-   /if (${roamRefreshTimer}==0 && ${Spawn[id ${roamTargetID}].Distance3D}>30) {
+   /if (${roamRefreshTimer}==0 && ${Spawn[id ${roamTargetID}].Distance3D}>40) {
       /if (${assistTarget}!=0) /call setAssistOff
       
       |/moveto loc ${Spawn[${roamTargetID}].Y} ${Spawn[${roamTargetID}].X} ${Spawn[${roamTargetID}].Z} 

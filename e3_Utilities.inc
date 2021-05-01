@@ -119,7 +119,7 @@ SUB IniToArray(Ini_Key, ArrayName, ArrayScope)
 SUB WriteToIni(string iniFile, string writeContents, bool backFillOnly)
 	/if (${backFillOnly}==TRUE) {
 		/if (${Ini[${iniFile}].Length}==NULL) {
-			/ECHO "${iniFile.Arg[1,,]}" "${iniFile.Arg[2,,]}" "${iniFile.Arg[3,,]}" "${writeContents}"
+			/bc Populating missing value: "${iniFile.Arg[2,,]}" "${iniFile.Arg[3,,]}" "${writeContents}"
 			/ini "${iniFile.Arg[1,,]}" "${iniFile.Arg[2,,]}" "${iniFile.Arg[3,,]}" "${writeContents}"
 		}
 		/return

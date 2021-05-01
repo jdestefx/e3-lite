@@ -213,6 +213,11 @@ SUB checkHeals
 			/if (${Me.PctMana} >= ${iniHeals[${i},${bSelfUnderMana}]}) /goto :loopnexti
 		}
 
+
+		/if (${iniHeals[${i},${bRequireMobsInProximity}].NotEqual[-]}) {
+			/if (${SpawnCount[npc loc ${Me.X} ${Me.Y} radius 40]} < ${iniHeals[${i},${bRequireMobsInProximity}]}) /goto :loopnexti
+		}
+
 		/if (${iniHeals[${i},${bRequireMaxMobsInProximity}].NotEqual[-]}) {
 			/if (${SpawnCount[npc loc ${Me.X} ${Me.Y} radius 75]} > ${iniHeals[${i},${bRequireMaxMobsInProximity}]}) /goto :loopnexti
 		}

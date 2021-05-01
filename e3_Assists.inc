@@ -8,6 +8,7 @@ SUB assist_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Assist,AutoFire" NO ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Melee Distance" 8 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Slay Index" 99 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,Slay Search" "npc LOS targetable range 41 70 radius 55" ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,SlayReferencePoint" ${Me.CleanName} ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,BeneficialStrip" NONE ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Tank" NO ${backFillOnly}
@@ -35,6 +36,7 @@ Sub assist_Setup
    /declare persistentAssistTags list outer
    /declare assistTags list outer
 
+   /declare slaySearch string outer 
    /declare combatTimer timer outer
    /declare combatDelay int outer 70
    /declare assistQueue string outer 
@@ -109,6 +111,7 @@ Sub assist_Setup
 
    /call getIniToVar "${iniFileCharacter},Assist,Slay Index" slayIndex 99
    /call getIniToVar "${iniFileCharacter},Assist,SlayReferencePoint" slayReferencePoint ${Me.CleanName}
+   /call getIniToVar "${iniFileCharacter},Assist,SlaySearch" slaySearch "npc LOS targetable range 41 70 radius 55"
    /call getIniToVar "${iniFileCharacter},Assist,Stick Point" assistStickPoint BEHIND
    /call getIniToVar "${iniFileCharacter},Assist,Melee" meleeAssist YES
    /call getIniToVar "${iniFileCharacter},Assist,Melee Distance" assistStickDistance 8
@@ -135,6 +138,7 @@ Sub assist_Setup
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezSpell" autoMezSpell NONE
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezTimerMarginSeconds" autoMezTimerMarginSeconds 10
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezMustHaveName" autoMezMustHaveName -
+
 
    /varset slayIndex ${Math.Calc[${slayIndex}-1]}
    
@@ -594,16 +598,15 @@ SUB check_slay
    /declare refX int local ${Spawn[${slayReferencePoint}].X}
    /declare refY int local ${Spawn[${slayReferencePoint}].Y}
    /declare refZ int local ${Spawn[${slayReferencePoint}].Z}
-   /declare search string local npc los targetable range 1 60 radius 55 loc ${refX} ${refY}
    /declare xID int local
-   /declare max int local ${SpawnCount[${search}]}
+   /declare max int local ${SpawnCount[${slaySearch} loc ${refX} ${refY}]}
    /declare i int local
 
    /if (${slayIndex}>90) /return
    /if (${max}==0) /RETURN
 
    /for i 1 to ${max}
-      /varset xID ${NearestSpawn[${i},${search}].ID}
+      /varset xID ${NearestSpawn[${i},${slaySearch}].ID}
       /if (${slayProxIDs.Index[${xID}]}==-1) {
          /invoke ${slayProxIDs.Append[${xID}]}
       }
