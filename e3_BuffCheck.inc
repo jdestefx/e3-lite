@@ -760,7 +760,9 @@ SUB EVENT_hailResponse(string line, string hailer, string hailee)
       /if (${spewedSpells.Find[${iniBuffRequests[${i},1]},]}!=NULL) /continue
       /if (${iniBuffRequests[${i},1].Equal[-]}) /break
 
+
       /varset cleanKeywords ${iniBuffRequests[${i},${bKeyword}].Upper.Replace[EMOTABLE,]}
+      /if (${cleanKeywords.Find[!HIDE]}!=NULL) /continue
       /if (${cleanKeywords.Right[1].Equal[,]}) /varset cleanKeywords ${cleanKeywords.Left[-1]}
 
       /varset response ${response} ... [ ${cleanKeywords} => ${iniBuffRequests[${i},1]} ]

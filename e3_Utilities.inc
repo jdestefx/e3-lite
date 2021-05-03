@@ -305,7 +305,7 @@ SUB event_expSpammerResponder
 		/declare newAAExp int local ${Me.AAExp}
 		/declare newExp int local ${Me.Exp}
 
-		/if (${expAmt} < ${newExp}) /bc AA ► +${Math.Calc[(${newExp}-${expAmt}) /1000 ].Precision[3]} [${Me.PctExp.Int}%] (${Me.Level})
+		/if (${expAmt} < ${newExp}) /bc REG ► +${Math.Calc[(${newExp}-${expAmt}) /1000 ].Precision[3]} [${Me.PctExp.Int}%] (${Me.Level})
 		/if (${aaExpAmt} < ${newAAExp}) /bc AA ► +${Math.Calc[(${newAAExp}-${aaExpAmt}) /1000 ].Precision[3]} [${Me.PctAAExp.Int}%] (${Me.AAPoints} Banked)
 
 		/varset expAmt ${newExp}

@@ -287,6 +287,12 @@ SUB EVENT_adhocCast(string line, string chatSender, string castName, string cast
          /if (${adhocCastList.Contains[${castName}_${botID}]}==TRUE) /continue
          /invoke (${adhocCastList.Append[${castName}_${botID}]})
       /next i
+   } (${castTarget.Upper.Equal[SELF]}) {
+      /if (${adhocCastList.Contains[${castName}_${Me.ID}]}==TRUE) {
+         /bc Already have a cast request for ${castName} for ${Me.CleanName}
+         /return
+      }
+      /invoke ${adhocCastList.Append[${castName}_${Me.ID}]}
    } else /if (${Spawn["${castTarget}"].ID}!=NULL) {
       /if (${adhocCastList.Contains[${castName}_${Spawn["${castTarget}"].ID}]}==TRUE) {
          /bc Already have a cast request for ${castName} for ${Spawn["${castTarget}"].CleanName}
