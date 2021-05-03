@@ -1696,7 +1696,10 @@ SUB EVENT_remPASTTags(string line, string remTags)
 
 
 #event adistChange "[#*#(msg)] e3 adist #1#"
+#event adistChange "<#*#> e3 adist #1#"
+#event adistChange "[#*#(msg)] adist #1#"
 #event adistChange "<#*#> adist #1#"
+
 SUB EVENT_adistChange(string line, string newDist)
    /varset assistStickDistance ${newDist}
    /bc Assist stick distance is now ${newDist}
