@@ -98,7 +98,7 @@ Sub background_Background_Events
       /varset buffDurations ${buffDurations};${Me.Buff[${i}].Spell.ID}_${Me.Buff[${i}].Duration.TotalSeconds}
    /next i
 
-   /if (${adhocCastList.Count}>0) {
+   /if (${adhocCastList.Count}>0 && ${Me.SpellInCooldown}==FALSE) {
       /call checkAdhocCastList
    }
 
@@ -108,7 +108,6 @@ Sub background_Background_Events
 /return
 
 SUB checkAdhocCastList
-   /echo ...
    /if (${adhocCastListCheckTimer}>0) /return
    /varset adhocCastListCheckTimer 1s
 
@@ -272,14 +271,6 @@ SUB EVENT_adhocCast(string line, string chatSender, string castName, string cast
    /declare spellID int local
    /declare castSpell spell local
 
-   |/call e3_getSpellByCastRequestName ${castName}
-   |/echo ret: ${Macro.Return}
-   |/if (${Macro.Return.Equal[UNKNOWN]}) {
-   |   /bc Could not identify a spell from request: ${castName}
-   |   /return
-   |}
-   |/vardata castSpell ${Macro.Return}
-  
    /if (${castTarget.Upper.Equal[ALL]}) {
       /for i 1 to ${NetBots.Counts}
          /varset botName ${NetBots.Client[${i}]}
