@@ -1,13 +1,4 @@
 
-| FIX BUFFS NOT APPLYING - CONSTANTALY RECAST
-| blocked debuffs also recasting
-| when type=none, bots never get their assisting cleared
-| sticking prevents combat buffs
-| getNetBotReadyForHeal not detecting dead state for netbots
-|
-|
-| add curse curing
-
 |#warning
 
 |--------------------------------|
