@@ -1,5 +1,6 @@
 SUB heals_CharacterSettings(bool backFillOnly)
 	/call WriteToIni "${iniFileCharacter},Misc,XTargetHealsEnabled" NO ${backFillOnly}
+	/call WriteToIni "${iniFileCharacter},Misc,PanicHealSpell" NONE ${backFillOnly}
 /RETURN
 
 SUB heals_Setup
@@ -17,8 +18,13 @@ SUB heals_Setup
 	/declare doCurseRemoval bool outer TRUE
 	/declare doPoisonRemoval bool outer TRUE
 
+	/declare panicTargetID int outer 0
+	/declare panicHealActive bool outer FALSE
+	/declare panicHealSpellName string outer NONE
+
 	/call getIniToVar "${iniFileCharacter},Heal Team,OtherHealerNetBots" otherHealerNetBots NONE
 	/call getIniToVar "${iniFileCharacter},Misc,XTargetHealsEnabled" xTargetHealsEnabled NO
+	/call getIniToVar "${iniFileCharacter},Misc,PanicHealSpell" panicHealSpellName NONE
 
 	/call processHealTargets
 /RETURN
@@ -60,9 +66,24 @@ SUB processHealTargets
 SUB heal_Background_Events
 	/if (${checkHealerIndexTimer}==0) /call determineHealerIndex
 	
+	/if (${panicHealActive}==TRUE) {
+		/call checkPanicHeal
+		/return
+	}
+
 	/if (${healsEnabled}==TRUE && ${Defined[iniHeals]}) {
 		/call checkHeals
 	}
+/RETURN
+
+SUB checkPanicHeal 
+	/if (${Me.Casting.ID}!=NULL) /return
+	/if (${Me.SpellInCooldown}==TRUE) /return
+	/if (${Stick.Active}==TRUE || ${Me.Moving}==TRUE) /return
+
+	/call fullTarget ${panicTargetID}
+	/call e3_Cast ${panicTargetID} "${panicHealSpellName}" "TARGETLIFEPCT:80"
+	
 /RETURN
 
 SUB check_CurseRemoval 
@@ -486,4 +507,30 @@ SUB event_xthModeChange(string line, string xthMode)
 	}
 
 	/bc XTargetHeals turned ${xthMode}.
+/RETURN
+
+
+#EVENT panicHeal "#*#e3 panicheal #1#"
+SUB event_panicHeal(string line, string panicParam)
+
+	/if (${panicParam.Upper.Equal[OFF]}) {
+		/varset panicHealActive FALSE
+		/bc Panic healing OFF.
+	} else {
+		/if (${panicHealSpellName.Upper.Equal[NONE]}) {
+			/bc I have no panic heal spell defined in my INI. Cannot use panic heal.
+			/return
+		}
+
+		/if (${Spawn[pc ${panicParam}].ID}==NULL) {
+			/bc Unknown Panic Heal Target ${panicParam}
+			/return
+		}
+
+		/varset panicTargetID ${Spawn[pc ${panicParam}].ID}
+		/varset panicHealActive TRUE
+
+		/bc New panic heal target: ${Spawn[pc ${panicParam}].CleanName}
+	}
+
 /RETURN

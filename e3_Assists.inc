@@ -245,6 +245,7 @@ SUB checkAutoFireAssist
 
 SUB checkCamp 
    /if (${campCheckTimer}>0) /RETURN
+   /if (${Me.Moving}==TRUE) /return
    /varset campCheckTimer 5
    
    /if (${Zone.ID}!=${campStartZoneID}) {
@@ -255,7 +256,7 @@ SUB checkCamp
    /if (${Stick.Active}==TRUE || ${Navigation.Active}==TRUE) /RETURN
    /if (${combatTimer}>0) /RETURN
 
-   /if (${Math.Distance[${campY} ${campX} ${campZ}]}>20) {
+   /if (${Math.Distance[${campY}, ${campX}, ${campZ}]}>20) {
       /if (${Navigation.MeshLoaded}==TRUE && ${Navigation.Active}==FALSE && ) {
          /bc Returning to camp.
          /nav locxyz ${campX} ${campY} ${campZ}
