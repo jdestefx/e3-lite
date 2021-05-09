@@ -264,7 +264,6 @@ SUB EVENT_followStop(string line, string chatSender)
 SUB EVENT_adhocCast(string line, string chatSender, string castName, string castTarget)
    /varset castName ${castName.Upper}
 
-
    /declare i int local
    /declare botName string local
    /declare botID int local

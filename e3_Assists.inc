@@ -26,6 +26,8 @@ SUB assist_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Assist,AutoMezSpawnSearch" "radius 50 los range 1 10" ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,AutoMezTimerMarginSeconds" 10 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,AutoMezMustHaveName" - ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,MeleeRetreatPercent" 45 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,MeleeRetreatResumePercent" 80 ${backFillOnly}
 
 /RETURN
 
@@ -74,11 +76,15 @@ Sub assist_Setup
    /declare ignoreAssistCalls bool outer FALSE
    /declare maintainAssistLOS bool outer TRUE
    /declare autoDisarm bool outer FALSE
+
    /declare meleeRetreat bool outer FALSE
-   /declare meleeRetreatPercent bool outer 30
-   /declare meleeRetreatResumePercent bool outer 70
-   /declare meleeRetreatLocXYZ string outer -
+   /declare meleeRetreatPercent int outer 90
+   /declare meleeRetreatResumePercent int outer 100
+   /declare meleeRetreatLocX string outer -
+   /declare meleeRetreatLocY string outer -
+   /declare meleeRetreatLocZ string outer -
    /declare amMeleeRetreating bool outer FALSE
+
    /declare doCharm bool outer FALSE
    /declare currentCharmSpawnID int outer 0
    /declare charmSpellName string outer -
@@ -126,9 +132,8 @@ Sub assist_Setup
    /call getIniToVar "${iniFileCharacter},Assist,IgnoreAssistCalls" ignoreAssistCalls FALSE
    /call getIniToVar "${iniFileCharacter},Assist,MaintainAssistLOS" maintainAssistLOS TRUE
    /call getIniToVar "${iniFileCharacter},Assist,AutoDisarm" autoDisarm FALSE
-   /call getIniToVar "${iniFileCharacter},Assist,MeleeRetreat" meleeRetreat FALSE
-   /call getIniToVar "${iniFileCharacter},Assist,MeleeRetreatPercent" meleeRetreatPercent 30
-   /call getIniToVar "${iniFileCharacter},Assist,MeleeRetreatResumePercent" meleeRetreatResumePercent 70
+   /call getIniToVar "${iniFileCharacter},Assist,MeleeRetreatPercent" meleeRetreatPercent 90
+   /call getIniToVar "${iniFileCharacter},Assist,MeleeRetreatResumePercent" meleeRetreatResumePercent 100
    /call getIniToVar "${iniFileCharacter},Assist,AcceptCharmCommands" doCharm FALSE
    /call getIniToVar "${iniFileCharacter},Assist,CharmSpellName" charmSpellName FALSE
    /call getIniToVar "${iniFileCharacter},Assist,CharmDebuffs" charmDebuffSpellNames NONE
@@ -167,6 +172,11 @@ Sub assist_Background_Events
    /if (${Me.Dead}==TRUE) {
       /if (${assistTarget}!=0) /call setAssistOff
       /return
+   }
+
+   /if (${meleeRetreat}==TRUE) {
+      /call checkMeleeRetreat
+      /if (${Macro.Return}==TRUE) /return
    }
 
    /if (${joustEnabled}==TRUE) {
@@ -208,7 +218,6 @@ Sub assist_Background_Events
    /if (${autoAssist}==TRUE && ${assistTarget}==0) /call check_AutoAssist
    /if (${doCharm}==TRUE) /call checkCharm
    /if (${autoMez}==TRUE) /call checkAutoMez
-   /if (${meleeRetreat}==TRUE && ${assistTarget}!=0) /call checkMeleeRetreat
    /if (${slayMode}==TRUE && ${meleeAssist}==TRUE) /call check_slay
    /if (${assistTarget}!=0) /call check_AssistStatus
    /if (${assistTarget}==0 && ${assistQueue.Length}>0) /call checkAssistQueue
@@ -408,7 +417,6 @@ SUB getReadyMezSpell
       }
    } else {
       /for i 1 to ${Math.Calc[${autoMezSpell.Count[,]}+1]}
-         /ECHO CHECkready: ${autoMezSpell.Token[${i},,]}]}
          /if (${isCastReady[${autoMezSpell.Token[${i},,]}]}==TRUE) {
             /return ${autoMezSpell.Token[${i},,]}
          }
@@ -454,16 +462,29 @@ SUB checkCharm
 /return
 
 SUB checkMeleeRetreat
+
    /if (${Me.PctHPs} >= ${meleeRetreatResumePercent} && ${amMeleeRetreating}==TRUE) {
       /varset amMeleeRetreating FALSE
-      /return
+      /return FALSE
    }
 
    /if (${Me.PctHPs} <= ${meleeRetreatPercent}) {
-      /varset amMeleeRetreating TRUE
-      /call setAssistOff
-      /nav locxyz ${meleeRetreatLocXYZ}
+      /echo here2
+
+      /if (${amMeleeRetreating}==FALSE) {
+         /varset amMeleeRetreating TRUE
+         /call setAssistOff
+      }
+
+      /if (${Math.Distance[${meleeRetreatLocY},${meleeRetreatLocX},${meleeRetreatLocZ}]}>10) {
+         /nav locxyz ${meleeRetreatLocX} ${meleeRetreatLocY} ${meleeRetreatLocZ}
+         /delay 10
+      }
+
+      /return TRUE
    }
+
+   /return FALSE
 /RETURN
 
 SUB checkAutoDisarm
@@ -1483,15 +1504,19 @@ SUB event_allMelee(string line, string burnTime)
 #event retreatHere "[#1#(msg)] e3 retreat here"
 #event retreatHere "<#1#> e3 retreat here"
 SUB event_retreatHere(string line, string who)
-   /varset meleeRetreatLocXYZ ${Spawn[pc ${who}].X} ${Spawn[pc ${who}].Y} ${Spawn[pc ${who}].Z}
+   /echo ${who}
+   /varset meleeRetreatLocX ${Spawn[pc ${who}].X}
+   /varset meleeRetreatLocY ${Spawn[pc ${who}].Y}
+   /varset meleeRetreatLocZ ${Spawn[pc ${who}].Z}
+
    /varset meleeRetreat TRUE
-   /bc Retreach XYZ is now: ${meleeRetreatLocXYZ}
+   /bc Retreat is on.
 /RETURN
 
 #event retreatOff "[#1#(msg)] e3 retreat off"
 #event retreatOff "<#1#> e3 retreat off"
 SUB event_retreatOff(string line, string who)
-   /varset meleeRetreatLocXYZ -
+   /varset meleeRetreatLocYXZ -
    /varset meleeRetreat FALSE
    /bc Retreat off.
 /RETURN
