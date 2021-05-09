@@ -224,8 +224,14 @@ SUB checkCancelConditions(string conditions)
 	/if (${conditions.Upper.Find[TARGETLIFEPCT:]}!=0) {
 		/call getEntryParam "${conditions}" TARGETLIFEPCT
 		| TRYING NETBOTS TO ACCOUNT FOR THE LATENCY OF A HEALTH BAR WHEN CHANGING TARGETS
-		/if (${NetBots[${Target.Name}].PctHPs} > ${Math.Calc[${Macro.Return}]}) {
-			/return TRUE
+		/if (${NetBots[${Target.Name}].ID}!=NULL) {
+			/if (${NetBots[${Target.Name}].PctHPs} > ${Math.Calc[${Macro.Return}]}) {
+				/return TRUE
+			}
+		} else {
+			/if (${Target.PctHPs} > ${Math.Calc[${Macro.Return}]}) {
+				/return TRUE
+			}
 		}
 	}
 
