@@ -61,7 +61,7 @@ Sub assist_Setup
    /declare autoFireAssist bool outer FALSE
    /declare autoFireMeleeMode bool outer FALSE
    /declare autoFireTankMode bool outer FALSE
-   /declare assistStickDistance int outer 8
+   /declare assistStickDistance string outer 8
    /declare autoAssist bool outer FALSE
    /declare autoAssistPercent int outer 99
    /declare beneficialStrip string outer
@@ -172,6 +172,12 @@ Sub assist_Background_Events
    /if (${Me.Dead}==TRUE) {
       /if (${assistTarget}!=0) /call setAssistOff
       /return
+   }
+
+   /if (${assistTarget}!=0) {
+      /if (${Window[AdvancedLootWnd].Minimized}==FALSE) {
+         /invoke ${Window[AdvancedLootWnd].DoClose}
+      }
    }
 
    /if (${meleeRetreat}==TRUE) {
@@ -719,7 +725,13 @@ SUB check_AssistStatus
 
    /if (${meleeAssist}==TRUE) {
       /if (${Target.ID}!=${assistTarget}) /tar id ${assistTarget}
-      /if (${Stick.StickTarget} != ${assistTarget} || ${Stick.Active}==FALSE) /stick ${assistStickDistance} id ${assistTarget} ${assistStickPoint} moveback uw
+      /if (${Stick.StickTarget} != ${assistTarget} || ${Stick.Active}==FALSE) {
+         /if (${assistStickDistance.Upper.Equal[MAX]}) {
+            /stick ${Math.Calc[${Spawn[id ${assistTarget}].MaxRangeTo.Int}-2]} id ${assistTarget} ${assistStickPoint} moveback uw
+         } else {
+            /stick ${assistStickDistance} id ${assistTarget} ${assistStickPoint} moveback uw
+         }
+      }
       /if (${Me.Combat}==FALSE) /attack on
    }
 

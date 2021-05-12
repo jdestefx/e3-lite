@@ -5,6 +5,7 @@ Sub buffs_Setup
    /declare buffRequestRequiresGuildMatch bool outer TRUE
    /declare buffRequestMinimumMana int outer 50
    /declare buffRequestOOMEmoteTimer timer outer 0
+   /declare buffReplyViaTell bool outer FALSE
 
    /declare buffRequestLockoutTimer timer outer 
    /declare buffsEnabled bool outer TRUE
@@ -18,6 +19,7 @@ Sub buffs_Setup
 
    /call getIniToVar "${iniFileCharacter},Misc,AcceptBuffRequests" acceptBuffRequests FALSE
    /call getIniToVar "${iniFileCharacter},Misc,BuffRequestMinimumMana" buffRequestMinimumMana 50
+   /call getIniToVar "${iniFileCharacter},Misc,BuffReplyViaTell" buffReplyViaTell FALSE
    /call getIniToVar "${iniFileCharacter},Misc,UseStrictCombatCheck" useStrictCombatCheck FALSE
 
    /if (${Defined[iniBuffRequests]}==NULL || ${iniBuffRequests[1,1].Equal[-]}) /varset acceptBuffRequests FALSE
@@ -27,6 +29,7 @@ Sub buffs_Setup
 SUB buffCheck_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Misc,AcceptBuffRequests" NO ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Misc,BuffRequestMinimumMana" 50 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Misc,BuffReplyViaTell" NO ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Misc,UseStrictCombatCheck" NO ${backFillOnly}
 /RETURN
 
@@ -769,6 +772,11 @@ SUB EVENT_hailResponse(string line, string hailer, string hailee)
       /varset spewedSpells ${iniBuffRequests[${i},1]},${spewedSpells}
    /next i
 
-   /say Hail, ${hailer}. ${response} (${Me.PctMana}m).
+   /if (${buffReplyViaTell}==TRUE) {
+      /docommand /tell ${hailer} ${response} (${Me.PctMana}m).
+   } else {
+      /say Hail, ${hailer}. ${response} (${Me.PctMana}m).
+   }
+   
 /RETURN
 

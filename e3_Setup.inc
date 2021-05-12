@@ -256,20 +256,17 @@ SUB makeCharSettingsIniFile(bool backFillOnly)
 |Checks for and enables required macro plugins.     -|
 |----------------------------------------------------|
 SUB check_Plugins
-   
-   |/setwintitle EverQuest-${MacroQuest.LoginName}
-   |/setwintitle EverQuest-${Me.CleanName}
    /setwintitle ${Me.CleanName}
    
-   |/if (!${Plugin[MQ2EQBC].Name.Length}) {
-   |   /echo Plugin MQ2EQBC is not loaded, attempting to resolve...
-   |   /plugin MQ2EQBC
-   |   /delay 10s !${Select[${EQBC},NULL]}
-   |   /if (${Select[${EQBC},NULL]}) {
-   |      /echo ***WARNING*** Could not load MQ2EQBC, macro functionality may be limited.
-   |      /echo Starting in Solo Mode...
-   |   }
-   |}
+   /if (${Plugin[MQ2EQBC].Name.Length}==NULL) {
+      /echo MQ2EQBC not loaded. Cannot continue. Ending.
+      /end
+   }
+
+   /if (${Plugin[MQ2Collections].Name.Length}==NULL) {
+      /echo MQ2Collections not loaded. Cannot continue. Ending.
+      /end
+   }
 
    /if (${Bool[${EQBC}]}) {
       /if (!${EQBC.Connected}) {
@@ -278,37 +275,19 @@ SUB check_Plugins
          /delay 5
          /if (!${EQBC.Connected}) /echo ***WARNING*** Could not connect to EQBCS! Please open EQBCS and try again.  Macro functionality may be limited...
       }
-
-
-      /if (!${Plugin[MQ2NetBots].Name.Length}) {
-         /echo Plugin MQ2NetBots is not loaded, attempting to resolve...
-         /plugin MQ2NetBots
-         /delay 3s ${NetBots}
-         /if (!${NetBots}) {
-            /echo ***WARNING*** Could not load MQ2NetBots! Macro functionality may be limited.
-         }
-      }
-      
-      /if (${NetBots}) {
-         /squelch /netbots on grab=on send=on
-      }
-      
    }
    
-   /if (!${Plugin[MQ2MoveUtils].Name.Length}) {
-      /echo Plugin MQ2MoveUtils is not loaded, attempting to resolve...
-      /plugin MQ2MoveUtils
-      /delay 3s !${Select[${Stick.Status},NULL]}
-      /if (${Select[${Stick.Status},NULL]}) {
-         /echo ***WARNING*** Could not load MQ2MoveUtils! Macro functionality may be limited.
-         /if (!${NetAdvPath}) {
-            /echo Follow and Assist stick DISABLED.
-         } else {
-            /echo Assist and NPC stick DISABLED.
-            /echo Follow restricted to NetBots.
-         }
-      } 
-   } 
+   /if (${Plugin[MQ2NetBots].Name.Length}==NULL) {
+      /echo MQ2NetBots not loaded. Cannot continue. Ending.
+      /end
+   } else {
+      /if (${NetBots}) {
+         /squelch /netbots on grab=on send=on
+      }   
+   }
 
-   /if (!${Plugin[mq2itemdisplay].Name.Length}) /plugin MQ2ItemDisplay
+   /if (${Plugin[MQ2MoveUtils].Name.Length}==NULL) {
+      /echo MQ2MoveUtils not loaded. Cannot continue. Ending.
+      /end
+   }
 /RETURN
