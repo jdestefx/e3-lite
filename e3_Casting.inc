@@ -13,6 +13,16 @@ SUB casting_MacroSettings
 SUB casting_CharacterSettings
 /RETURN
 
+SUB getSpellDurationByRequestName(string castRequest)
+	/declare s spell local
+	/call e3_getSpellByCastRequestName "${castRequest}"
+
+	/if (${Macro.Return.Equal[NULL]}) /return 0
+	/vardata s ${Macro.Return}
+
+	/return ${s.MyDuration.TotalSeconds}
+/RETURN
+
 SUB e3_getCastTypeByCastRequest(string castRequest) 
    /if (${Me.AltAbility[${castRequest}].ID}) /return ALTABILITY
    /if (${Me.CombatAbility[${castRequest}]}) /return DISCIPLINE
@@ -20,6 +30,8 @@ SUB e3_getCastTypeByCastRequest(string castRequest)
    /if (${Spell[${castRequest}].ID}) /return SPELL
    /RETURN UNKNOWN
 /RETURN
+
+
 
 SUB e3_getSpellByCastRequestName(string castRequest) 
    /if (${FindItemCount[=${castRequest}]}>0) /return FindItem[=${castRequest}].Spell
@@ -33,7 +45,7 @@ SUB e3_getSpellByCastRequestName(string castRequest)
    /RETURN UNKNOWN
 /RETURN
 
-SUB e3_Cast(int targetID, string castName, string cancelConditions)
+SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTimeBeforeCancelChecks)
 	/declare maxFizzle int local 3
 	/declare fizzleCount int local 0
 	/declare castType string local
@@ -117,6 +129,10 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions)
 	/while (${Me.Casting.ID}==NULL && ${precastWatchTimer}>0) {
 		/delay 1
 		/doevents
+	}
+
+	/if (${waitTimeBeforeCancelChecks}>0) {
+		/delay ${waitTimeBeforeCancelChecks}
 	}
 
 	/while (${Cast.Status.Find[C]}!=NULL) {

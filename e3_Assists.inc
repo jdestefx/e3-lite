@@ -279,7 +279,6 @@ SUB checkCamp
          /moveto loc ${campY} ${campX}
       }
    }
-   
 /RETURN
 
 SUB checkTauntSuccessList
@@ -670,7 +669,6 @@ SUB setAssistOn(targetID)
    /face fast id ${targetID}
    /tar id ${targetID}
    /if (${Me.Pet.ID}) /timed 3 /pet attack
-
 /RETURN
 
 SUB check_AssistStatus
@@ -831,9 +829,19 @@ SUB check_Dispell
    | FOR SOME REASON NOT TARGETTING ANYTHING?
    /if (${Target.ID}==NULL) /return
    /if (${assistTarget}==0) /return
+   /if (${Target.BuffsPopulated}==FALSE) /return
 
-   | NOTHING TO DISPELL?
-   /if (${Target.Beneficial.ID}==NULL) /return
+
+   /declare i int local
+   /declare hasDispellable bool local FALSE
+
+   /for i 1 to ${Target.BuffCount}
+      /if (${Target.Buff[${i}].Name.Upper.Find[MITIGATION OF THE MIGHTY]}!=NULL) /continue
+      /varset hasDispellable TRUE
+      /break
+   /next i
+
+   /if (${hasDispellable}==FALSE) /return
 
    /if (${isCastReady[${beneficialStrip}]}==TRUE) {
       /stick off

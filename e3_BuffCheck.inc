@@ -1,11 +1,12 @@
 
 Sub buffs_Setup
    /declare acceptBuffRequests bool outer TRUE
-   /declare buffQueue string outer
+   /declare buffQueue list outer
    /declare buffRequestRequiresGuildMatch bool outer TRUE
    /declare buffRequestMinimumMana int outer 50
    /declare buffRequestOOMEmoteTimer timer outer 0
    /declare buffReplyViaTell bool outer FALSE
+   /declare repeatBuffsQueue list outer
 
    /declare buffRequestLockoutTimer timer outer 
    /declare buffsEnabled bool outer TRUE
@@ -72,6 +73,7 @@ Sub buffCheck_Background_Events
    /if (${acceptBuffRequests}==TRUE) {
       /call checkNeedsBuffsQueue
       /call checkBuffRequestQueue
+      /call checkRepeatBuffsQueue
    }
 
    /if (${buffsEnabled} && ${Defined[iniBuffs]}) {
@@ -93,9 +95,31 @@ Sub buffCheck_Background_Events
    }
 /return
 
+SUB checkRepeatBuffsQueue
+   /declare i int local 
+   /declare e string local
+   /declare targetID int local
+   /declare entryIndex int local
+   /declare castRequest string local
+
+   /if (${repeatBuffsQueue.Count}==0) /return
+
+   /for i 0 to ${Math.Calc[ ${repeatBuffsQueue.Count}-1 ]}
+      /varset e ${repeatBuffsQueue.Item[${i}]}
+      /if (${isLockoutExpired[${e}]}==TRUE) {
+         /varset targetID ${e.Token[1,_]}
+         /varset entryIndex ${e.Token[2,_]}
+         /varset castRequest ${iniBuffRequests[${entryIndex},1]}
+
+         |/echo adding to bq: ${targetID}_${castRequest}_${entryIndex}_1
+         /invoke ${buffQueue.Append[${targetID}_${castRequest}_${entryIndex}_1]}
+      }
+   /next i
+/RETURN
+
 SUB checkNeedsBuffsQueue
    /if (${needsBuffPlayerQueue.Count}==0) /return
-   /if (${buffQueue.Length}>0) /return
+   /if (${buffQueue.Count}>0) /return
 
    /declare i int local
    /declare buffName string local
@@ -124,7 +148,8 @@ SUB checkNeedsBuffsQueue
       }
 
       /if (${Target.Buff[${spellName}].ID}==NULL) {
-         /varset buffQueue ${queueEntry};${buffQueue}
+         |/varset buffQueue ${queueEntry};${buffQueue}
+         /invoke ${buffQueue.Add[${queueEntry}]}
       }
 
    /next i
@@ -136,12 +161,13 @@ SUB checkBuffRequestQueue
    /declare e string local
    /declare targetID int local
    /declare buffName string local
+   /declare createRecheckTimer bool local FALSE
    /declare ei int local
    /declare i int local
 
-   /if (${buffQueue.Length}==0) /return
+   /if (${buffQueue.Count}==0) /return
 
-   /if (${Me.PctMana} < ${buffRequestMinimumMana} && ${buffQueue.Length}>0) {
+   /if (${Me.PctMana} < ${buffRequestMinimumMana} && ${buffQueue.Count}>0) {
       /if (${buffRequestOOMEmoteTimer}==0) {
          /em is low on mana and will continue buff requests WMP.
          /varset buffRequestOOMEmoteTimer 60s
@@ -149,16 +175,17 @@ SUB checkBuffRequestQueue
       /return
    }
 
-   /for i 1 to ${Math[${buffQueue.Count[;]}+1]}
-      /varset e ${buffQueue.Token[${i},;]}
+   /for i 0 to ${Math.Calc[ ${buffQueue.Count}-1 ]}
+      /varset e ${buffQueue.Item[${i}]}
       
       /varset targetID ${e.Token[1,_]}
       /varset buffName ${e.Token[2,_]}
       /varset ei ${e.Token[3,_]}
+      /varset createRecheckTimer ${e.Token[4,_]}
 
       /if (${Spawn[pc id ${targetID}].ID}==NULL) {
-         /varset buffQueue ${buffQueue.Replace[${e};,]}
-         /return
+         /invoke ${buffQueue.Erase[${i}]}
+         /break
       }
 
       /if (${iniBuffRequests[${ei},${bSelfOverMana}].NotEqual[-]}) {
@@ -176,7 +203,13 @@ SUB checkBuffRequestQueue
       /if (${Macro.Return.Equal[CAST_NOREADY]}) /continue
 
       /if (${Macro.Return.Equal[CAST_NOTAKEHOLD]} || ${Macro.Return.Equal[CAST_SUCCESS]} || ${Macro.Return.Equal[CAST_TAKEHOLD]} || ${Macro.Return.Equal[CAST_NOTTAKEHOLD]}) {
-         /varset buffQueue ${buffQueue.Replace[${e};,]}
+         /invoke ${buffQueue.Erase[${i}]}
+
+         /if (${createRecheckTimer}==1) {
+            |/echo created lockout ${targetID}_${ei} for ${getSpellDurationByRequestName[${buffName}]}s
+            /call lockout "${targetID}_${ei}" ${getSpellDurationByRequestName[${buffName}]}s
+         }
+
          /break
       }
 
@@ -701,6 +734,13 @@ SUB EVENT_buffRequest(string line, string who, string msg)
    /declare spawnID int local
    /declare spellName string local
    /declare queueEntry string local
+   /declare repeatBuff int local 0
+
+   /if (${msg.Right[1].Equal[!]}) {
+      /echo repeat detected
+      /varset repeatBuff 1
+      /varset requestKeyword ${requestKeyword.Left[-1]}
+   }
 
    |/if (${combatTimer}>0) {
    |   /tell ${who} I'm too busy right now.
@@ -713,12 +753,7 @@ SUB EVENT_buffRequest(string line, string who, string msg)
       /if ( ${Select[${requestKeyword},${iniBuffRequests[${i},${bKeyword}]}]}!=0) {
          /varset spawnID ${Spawn[pc ${who}].ID}
          /varset spellName ${iniBuffRequests[${i},1]}
-         /varset queueEntry ${spawnID}_${spellName}_${i}
-
-         /if (${buffQueue.Find[${queueEntry}]}!=NULL) {
-            /tell ${who} You're already queued to receive ${spellName}.
-            /continue
-         }
+         /varset queueEntry ${spawnID}_${spellName}_${i}_${repeatBuff}
 
          /if (${iniBuffRequests[${i},${bRequireTargetClass}].NotEqual[-]}) {
             /if (${Select[${Spawn[id ${spawnID}].Class.ShortName},${iniBuffRequests[${i},${bRequireTargetClass}]}]}==0) {
@@ -727,9 +762,26 @@ SUB EVENT_buffRequest(string line, string who, string msg)
             }
          }
 
-         /varset buffQueue ${queueEntry};${buffQueue}
-         /bc added ${who} to queue. ${buffQueue}
-         /em nods at ${who}.
+         /if (${repeatBuff}==1) {
+            /if (${repeatBuffsQueue.Index[${spawnID}_${i}]}>-1) {
+               /tell ${who} You're already in my list for repeat buffs for ${spellName}.
+               /continue
+            } else {
+               |/echo added to rechecklist: ${queueEntry}
+               /invoke ${repeatBuffsQueue.Append[${spawnID}_${i}]}
+               /em beams a smile at ${who}.
+            }
+         } else {
+            /if (${buffQueue.Find[${queueEntry}]}!=NULL) {
+               /tell ${who} You're already queued to receive ${spellName}.
+               /continue
+            } else {
+               /invoke ${buffQueue.Append[${queueEntry}]}
+               /em nods at ${who}.
+            }
+         }
+
+         /bc added ${who} to queue. ${buffQueue.Count}
       }
 
    /next i
@@ -780,3 +832,11 @@ SUB EVENT_hailResponse(string line, string hailer, string hailee)
    
 /RETURN
 
+
+#EVENT clearBuffRequests "#*#e3 cbr#*#"
+SUB event_clearBuffRequests(line, ChatSender)
+   /bc Clearing all single, repeat, and emoted buff requests.
+   /invoke ${repeatBuffsQueue.Clear}
+   /invoke ${buffQueue.Clear}
+   /invoke ${needsBuffPlayerQueue.Clear}
+/RETURN

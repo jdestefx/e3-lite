@@ -1,6 +1,7 @@
 SUB heals_CharacterSettings(bool backFillOnly)
 	/call WriteToIni "${iniFileCharacter},Misc,XTargetHealsEnabled" NO ${backFillOnly}
 	/call WriteToIni "${iniFileCharacter},Misc,PanicHealSpell" NONE ${backFillOnly}
+	/call WriteToIni "${iniFileCharacter},Misc,PanicHealLifePct" 50 ${backFillOnly}
 /RETURN
 
 SUB heals_Setup
@@ -21,10 +22,12 @@ SUB heals_Setup
 	/declare panicTargetID int outer 0
 	/declare panicHealActive bool outer FALSE
 	/declare panicHealSpellName string outer NONE
+	/declare panicHealLifePct int outer 50
 
 	/call getIniToVar "${iniFileCharacter},Heal Team,OtherHealerNetBots" otherHealerNetBots NONE
 	/call getIniToVar "${iniFileCharacter},Misc,XTargetHealsEnabled" xTargetHealsEnabled NO
 	/call getIniToVar "${iniFileCharacter},Misc,PanicHealSpell" panicHealSpellName NONE
+	/call getIniToVar "${iniFileCharacter},Misc,PanicHealLifePct" panicHealLifePct 50
 
 	/call processHealTargets
 /RETURN
@@ -60,7 +63,6 @@ SUB processHealTargets
 		/varset iniHeals[${i},${bTargets}] ${finalTargets.Replace[|,,]} 
 
 	/next i
-
 /RETURN
 
 SUB heal_Background_Events
@@ -81,8 +83,13 @@ SUB checkPanicHeal
 	/if (${Me.SpellInCooldown}==TRUE) /return
 	/if (${Stick.Active}==TRUE || ${Me.Moving}==TRUE) /return
 
+	/declare waitTime int local
+
+	/varset waitTime ${Math.Calc[ ${Spell[${panicHealSpellName}].CastTime} / 100 / 3]}
+	/echo ${waitTime}
+
 	/call fullTarget ${panicTargetID}
-	/call e3_Cast ${panicTargetID} "${panicHealSpellName}" "TARGETLIFEPCT:80"
+	/call e3_Cast ${panicTargetID} "${panicHealSpellName}" "TARGETLIFEPCT:${panicHealLifePct}" ${waitTime}
 	
 /RETURN
 
