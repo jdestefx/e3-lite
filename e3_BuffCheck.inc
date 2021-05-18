@@ -7,6 +7,7 @@ Sub buffs_Setup
    /declare buffRequestOOMEmoteTimer timer outer 0
    /declare buffReplyViaTell bool outer FALSE
    /declare repeatBuffsQueue list outer
+   /declare repeatBuffsQueueCheckTimer timer outer
 
    /declare buffRequestLockoutTimer timer outer 
    /declare buffsEnabled bool outer TRUE
@@ -96,6 +97,9 @@ Sub buffCheck_Background_Events
 /return
 
 SUB checkRepeatBuffsQueue
+   /if (${repeatBuffsQueueCheckTimer}>0) /return
+   /varset repeatBuffsQueueCheckTimer 1s
+
    /declare i int local 
    /declare e string local
    /declare targetID int local
@@ -107,10 +111,12 @@ SUB checkRepeatBuffsQueue
    /for i 0 to ${Math.Calc[ ${repeatBuffsQueue.Count}-1 ]}
       /varset e ${repeatBuffsQueue.Item[${i}]}
       /if (${isLockoutExpired[${e}]}==TRUE) {
+         |/echo lockoutExpired: ${e}
          /varset targetID ${e.Token[1,_]}
          /varset entryIndex ${e.Token[2,_]}
          /varset castRequest ${iniBuffRequests[${entryIndex},1]}
 
+         /if (${buffQueue.Index[${targetID}_${castRequest}_${entryIndex}_1]}>-1) /continue
          |/echo adding to bq: ${targetID}_${castRequest}_${entryIndex}_1
          /invoke ${buffQueue.Append[${targetID}_${castRequest}_${entryIndex}_1]}
       }
@@ -157,6 +163,7 @@ SUB checkNeedsBuffsQueue
 
 SUB checkBuffRequestQueue
    /if (${buffRequestLockoutTimer}>0) /return
+   /varset buffRequestLockoutTimer 1s
 
    /declare e string local
    /declare targetID int local
@@ -164,6 +171,7 @@ SUB checkBuffRequestQueue
    /declare createRecheckTimer bool local FALSE
    /declare ei int local
    /declare i int local
+   /declare lockoutSecs int local
 
    /if (${buffQueue.Count}==0) /return
 
@@ -206,8 +214,11 @@ SUB checkBuffRequestQueue
          /invoke ${buffQueue.Erase[${i}]}
 
          /if (${createRecheckTimer}==1) {
-            |/echo created lockout ${targetID}_${ei} for ${getSpellDurationByRequestName[${buffName}]}s
-            /call lockout "${targetID}_${ei}" ${getSpellDurationByRequestName[${buffName}]}s
+            /varset lockoutSecs ${getSpellDurationByRequestName[${buffName}]}
+            /if (${lockoutSecs}==0) /varset lockoutSecs 30
+            /if (${lockoutSecs}>45) /varset lockoutSecs ${Math.Calc[${lockoutSecs}-12]}
+            |/echo created lockout ${targetID}_${ei} for ${lockoutSecs}s
+            /call lockout "${targetID}_${ei}" ${lockoutSecs}s
          }
 
          /break
@@ -737,7 +748,7 @@ SUB EVENT_buffRequest(string line, string who, string msg)
    /declare repeatBuff int local 0
 
    /if (${msg.Right[1].Equal[!]}) {
-      /echo repeat detected
+      |/echo repeat detected
       /varset repeatBuff 1
       /varset requestKeyword ${requestKeyword.Left[-1]}
    }
@@ -767,7 +778,7 @@ SUB EVENT_buffRequest(string line, string who, string msg)
                /tell ${who} You're already in my list for repeat buffs for ${spellName}.
                /continue
             } else {
-               |/echo added to rechecklist: ${queueEntry}
+               |/echo added to repeatBuffsQueue: ${queueEntry}
                /invoke ${repeatBuffsQueue.Append[${spawnID}_${i}]}
                /em beams a smile at ${who}.
             }
