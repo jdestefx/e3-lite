@@ -506,7 +506,7 @@ SUB getNetBotReadyForHeal(int healPct, int iniHealIndex)
 SUB event_xthModeChange(string line, string xthMode)
 	/if (${xthMode.Upper.Equal[ON]}) {
 		/varset xTargetHealsEnabled TRUE
-	} else /if (${xthMode.Upper.Equal[ON]}) {
+	} else /if (${xthMode.Upper.Equal[OFF]}) {
 		/varset xTargetHealsEnabled FALSE
 	} else {
 		/bc Unknown XTH mode. Use on or off.

@@ -25,6 +25,7 @@ Sub basics_Setup
    /declare renderBG int outer 0
    /declare actorClipPlane int outer 0
 
+
    | INI SETTINGS
    /declare expSpam bool outer
 
@@ -37,6 +38,7 @@ Sub basics_Setup
    /call getIniToVar "${iniFileCharacter},System,ActorClipPlane" actorClipPlane 50
    /call getIniToVar "${iniFileCharacter},System,RenderFG" renderFG 1
    /call getIniToVar "${iniFileCharacter},System,RenderBG" renderBG 2
+
 
    /if (${looter}==TRUE) {
       /hidec looted

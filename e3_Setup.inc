@@ -26,9 +26,10 @@
 
 
 SUB e3_Setup(string iniSuffix)
-   /declare macroVersion string local 1.38
-   /declare iniFileCharacter string outer e3_bots\${MacroQuest.Server}-${Me.CleanName}${iniSuffix}.ini
+   /echo e3-lite v${macroVersion} Starting.
 
+   /declare macroVersion string local 1.44
+   /declare iniFileCharacter string outer e3_bots\${MacroQuest.Server}-${Me.CleanName}${iniSuffix}.ini
    /declare manaClasses string outer CLR,DRU,ENC,PAL,BRD,WIZ,MAG,SHM,NEC,BST,SHD
    /declare manaRegenClasses string outer CLR,DRU,ENC,PAL,WIZ,MAG,SHM,BST,SHD
    /declare hasteClasses string outer MNK,BRD,ROG,WAR,RNG,PAL,BST,SHD,BER
@@ -40,7 +41,6 @@ SUB e3_Setup(string iniSuffix)
    /declare castWhileMovingClasses string outer ROG,MNK,BRD
    /declare tankClasses string outer WAR,PAL,SHD
    /declare knightClasses string outer PAL,SHD
-
    /declare classes_Debuffs string outer CLR,BST,DRU,ENC,MAG,NEC,PAL,RNG,SHM,SHD
    /declare classes_Nukes string outer CLR,DRU,NEC,WIZ,MAG,ENC,SHM,PAL,RNG,BST
    /declare classes_DoTs string outer CLR,BST,DRU,ENC,NEC,RNG,SHM,SHD
@@ -49,7 +49,6 @@ SUB e3_Setup(string iniSuffix)
    /declare classes_MeleeAssist string outer BRD,PAL,SHD,MNK,BST,BER,ROG,WAR
    /declare classes_RangeAssist string outer WIZ,NEC,MAG,ENC,SHM,CLR,DRU
    /declare classes_PassiveAssist string CLR,DRU,SHM,ENC
-
    /declare canDoBuffs bool outer ${classes_Buffs.Find[${myClass}]}
    |/declare canDoHeals bool outer TRUE ${classes_Heals.Find[${myClass}]}
    /declare canDoHeals bool outer TRUE 
@@ -126,28 +125,20 @@ SUB e3_Setup(string iniSuffix)
    /declare bRequireCursed string outer 64
    /declare bRequireAssistTag string outer 65
    /declare bNotIfAssistTag string outer 66
+   /declare bRequireUW string outer 67
 
-   |/declare autoKeywordIndex int outer 22
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE
    /declare iniSectionsAutoProcess string outer Buffs,Heals,AutoAbilities,Debuffs,AssistSpells,Burns,AggroAbilities,BuffRequests
 
    /declare allNetbotNames string outer
 
-   /echo e3-lite v${macroVersion} Starting.
-
    /call loadIniSections
-
    /call gatherNetbotNames
 
    /if (${Bool[${Ini[${iniFileCharacter}]}]}==FALSE) /call makeCharSettingsIniFile
 
    /call check_Plugins
-
-   | RUN CLASS SETUP
    /call ${Me.Class.ShortName}_setup
-
-
-   | FEATURE SETUPS
    /call basics_Setup
    /call background_Setup
    /call assist_Setup
@@ -161,7 +152,6 @@ SUB e3_Setup(string iniSuffix)
    /notify AdvancedDisplayOptionsWindow ADOW_MaxFPSSlider newvalue ${Math.Calc[${foregroundFPS}-9]}
    /notify AdvancedDisplayOptionsWindow ADOW_ActorClipPlaneSlider newvalue ${actorClipPlane}
 
-
    /render bg ${renderBG}
    /render fg ${renderFG}
    /maxfps fg ${foregroundFPS}
@@ -174,10 +164,9 @@ SUB e3_Setup(string iniSuffix)
    /netbots send=on
    /netbots grab=on
       
-   /if (${Me.CleanName.Equal[Penrilgone]}) {
-      /maxfps fg 60
-      /render bg 1
-      /maxfps bg 60
+   /if (${importPastTags.NotEqual[-]}) {
+      /bc Startup INI added PAST tags: ${importPastTags.Lower}
+      /invoke ${persistentAssistTags.Append[${importPastTags.Lower}]}
    }
 
    /echo Startup complete.

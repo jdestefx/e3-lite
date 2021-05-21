@@ -307,6 +307,9 @@ SUB processBuffs
       /if (${iniBuffs[${i},${bRequireMobsInProximity}].NotEqual[-]}) {
          /if (${SpawnCount[npc loc ${Me.X} ${Me.Y} radius 45]} < ${iniBuffs[${i},${bRequireMobsInProximity}]}) /continue
       }
+      /if (${iniBuffs[${i},${bRequireUW}].NotEqual[-]}) {
+         /if (${Me.FeetWet}==FALSE) /continue
+      }
 
 
       | OBTAIN BUFF SPELL DETAIL

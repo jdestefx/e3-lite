@@ -28,6 +28,7 @@ SUB assist_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Assist,AutoMezMustHaveName" - ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,MeleeRetreatPercent" 45 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,MeleeRetreatResumePercent" 80 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,StartupPastTags" - ${backFillOnly}
 
 /RETURN
 
@@ -37,6 +38,7 @@ Sub assist_Setup
    /declare burnCheckTimer timer outer 0
    /declare persistentAssistTags list outer
    /declare assistTags list outer
+   /declare importPastTags string outer -
 
    /declare slaySearch string outer 
    /declare combatTimer timer outer
@@ -143,7 +145,7 @@ Sub assist_Setup
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezSpell" autoMezSpell NONE
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezTimerMarginSeconds" autoMezTimerMarginSeconds 10
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezMustHaveName" autoMezMustHaveName -
-
+   /call getIniToVar "${iniFileCharacter},Assist,StartupPastTags" importPastTags -
 
    /varset slayIndex ${Math.Calc[${slayIndex}-1]}
    
@@ -1626,10 +1628,10 @@ SUB EVENT_charmBreak(string line, string mobName)
 SUB EVENT_toggleAutomez(string line, string newMode)
    /if (${newMode.Upper.Equal[ON]}) {
       /varset autoMez TRUE
-      /echo Automez is now ON
+      /bc Automez is now ON
    } else /if (${newMode.Upper.Equal[OFF]}) {
       /varset autoMez FALSE
-      /echo Automez is now OFF
+      /bc Automez is now OFF
    }
 
 /RETURN 
@@ -1751,3 +1753,15 @@ SUB EVENT_adistChange(string line, string newDist)
    /bc Assist stick distance is now ${newDist}
 /RETURN
 
+
+#event pastSave "[#*#(msg)] e3 pastsave #1#"
+#event pastSave "<#*#> e3 pastsave #1#"
+SUB EVENT_pastSave(string line, string saveTags)
+   /if (${saveTags.Upper.Equal[CLEAR]}) {
+      /bc Clearing Startup PAST Tags in INI.
+      /call WriteToIni "${iniFileCharacter},Assist,StartupPastTags" "-"
+   } else {
+      /bc Saved PAST Tags to INI: ${saveTags}
+      /call WriteToIni "${iniFileCharacter},Assist,StartupPastTags" "${saveTags}"
+   }
+/RETURN
