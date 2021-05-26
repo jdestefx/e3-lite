@@ -495,7 +495,7 @@ SUB processBuffs
 
       /if (${iniBuffs[${i},${bRequireGroupInRange}].NotEqual[-]}) {
          /for k 1 to ${Group.Members}
-            /if $({Group.Member[${k}].ID}==NULL) /continue
+            /if (${Group.Member[${k}].ID}==NULL) /continue
             /if (${Group.Member[${k}].Distance} > ${buffSpellRange}) /continue
          /next k
       }

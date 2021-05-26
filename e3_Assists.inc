@@ -115,6 +115,8 @@ Sub assist_Setup
    /declare campY int outer   
    /declare campZ int outer
 
+   /declare raidAssistActive bool outer FALSE
+
    /declare trapNames string outer a dark entity,a shimmering orb,a formless terror,a low hum,a singularity,a wardstone,a null field,an immobilizer,an explosion,a tanglefoot trap,a blast of heat
 
    /call getIniToVar "${iniFileCharacter},Assist,Slay Index" slayIndex 99
@@ -176,8 +178,12 @@ Sub assist_Background_Events
       /return
    }
 
+   /if (${raidAssistActive}==TRUE) {
+      /if (${checkRaidAssist[]}==TRUE) /return
+   }
+
    /if (${assistTarget}!=0) {
-      /if (${Window[AdvancedLootWnd].Minimized}==FALSE) {
+      /if (${Window[AdvancedLootWnd].Minimized}==FALSE && ${hideAdvlDuringCombat}==TRUE) {
          /invoke ${Window[AdvancedLootWnd].DoClose}
       }
    }
@@ -223,7 +229,7 @@ Sub assist_Background_Events
 
    /if (${campEnabled}==TRUE) /call checkCamp
    /if (${autoAssistHoldTimer}>0) /return
-   /if (${autoAssist}==TRUE && ${assistTarget}==0) /call check_AutoAssist
+   /if (${raidAssistActive}==FALSE && ${autoAssist}==TRUE && ${assistTarget}==0) /call check_AutoAssist
    /if (${doCharm}==TRUE) /call checkCharm
    /if (${autoMez}==TRUE) /call checkAutoMez
    /if (${slayMode}==TRUE && ${meleeAssist}==TRUE) /call check_slay
@@ -235,6 +241,45 @@ Sub assist_Background_Events
    /if (${beneficialStrip.NotEqual[NONE]} && ${doBeneficialStrip}==TRUE) /call check_Dispell
    /if (${autoFireAssist}==TRUE && ${assistTarget}!=0) /call checkAutoFireAssist
 /return
+
+SUB checkRaidAssist
+   /declare i int local 0
+   |/if (${Me.RaidAssistTarget[1].ID}==NULL && ${assistTarget}!=0) {
+   |   /call setAssistOff
+   |   /return TRUE
+   |}
+   |
+   |/if (${Me.RaidAssistTarget[1].ID} != ${assistTarget}) {
+   |   /if (${Me.RaidAssistTarget[1].Dead}==FALSE) {
+   |      /call setAssistOn ${Me.RaidAssistTarget[1].ID}
+   |      /return TRUE
+   |   }
+   |}
+   
+   /if (${Me.RaidMarkNPC[1].ID}==NULL && ${assistTarget}!=0) {
+      /call setAssistOff
+      /return TRUE
+   }
+
+   /if (${Me.RaidMarkNPC[1].ID} != ${assistTarget}) {
+      /if (${Me.RaidMarkNPC[1].Dead}==FALSE) {
+         /call setAssistOn ${Me.RaidMarkNPC[1].ID}
+         /return TRUE
+      }
+   }
+
+
+   |/for i 1 to 3
+   |   /if (${raidAssistActive}==TRUE && ${Me.RaidMarkNPC[${i}].ID} != ${assistTarget}) {
+   |      /if (${Me.RaidMarkNPC[${i}].Dead}==FALSE) {
+   |         /call setAssistOn ${Me.RaidMarkNPC[${i}].ID}
+   |         /return TRUE
+   |      }
+   |   }
+   |/next i
+
+   /RETURN FALSE
+/RETURN
 
 SUB checkAutoFireAssist
    /declare tgt spawn local
@@ -258,6 +303,8 @@ SUB checkAutoFireAssist
    /if (${Me.AutoFire}==FALSE) {
       /autofire
    }
+
+   /if (${Target.ID} != ${assistTarget}) /tar id ${assistTarget}
 /RETURN
 
 SUB checkCamp 
@@ -785,6 +832,7 @@ SUB setAssistOff
    /if (${Stick.Active}==TRUE && ${Stick.StickTarget}==${assistTarget}) /squelch /stick off
    /if (${Me.Pet.ID}) /pet back off
    /if (${Me.AutoFire}) /autofire off
+   /if (${Navigation.Active}) /nav stop
 
    /invoke ${slayProxIDs.Clear}
    /varset slayLockout FALSE
@@ -1765,3 +1813,19 @@ SUB EVENT_pastSave(string line, string saveTags)
       /call WriteToIni "${iniFileCharacter},Assist,StartupPastTags" "${saveTags}"
    }
 /RETURN
+
+
+#event setRaidAssist "[#*#(msg)] e3 raidassist #1#"
+#event setRaidAssist "<#*#> e3 raidassist #1#"
+#event setRaidAssist "[#*#(msg)] e3 ra #1#"
+#event setRaidAssist "<#*#> e3 ra #1#"
+SUB EVENT_setRaidAssist(string line, string newMode)
+   /if (${newMode.Upper.Equal[OFF]}) {
+      /bc No longer using raid-assist.
+      /varset raidAssistActive FALSE
+   } else {
+      /bc Will assist on Raid Mark targets.
+      /varset raidAssistActive TRUE
+   }
+/RETURN
+
