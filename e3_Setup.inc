@@ -126,6 +126,7 @@ SUB e3_Setup(string iniSuffix)
    /declare bRequireAssistTag string outer 65
    /declare bNotIfAssistTag string outer 66
    /declare bRequireUW string outer 67
+   /declare bCancelAtHP string outer 68
 
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE
    /declare iniSectionsAutoProcess string outer Buffs,Heals,AutoAbilities,Debuffs,AssistSpells,Burns,AggroAbilities,BuffRequests
