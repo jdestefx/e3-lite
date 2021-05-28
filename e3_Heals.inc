@@ -191,6 +191,7 @@ SUB checkHeals
 	/declare checkSpellID int local
 	/declare healLockoutTimerName string local
 	/declare triggerIdleCasting bool local TRUE
+	/declare cancelHealHP int local 
 
 	/declare botBuffIDs string local 
 
@@ -201,8 +202,10 @@ SUB checkHeals
 		/varset healEntry ${iniHeals[${i},1]}
 		/if (${healEntry.Equal[-]}) /goto :loopend
 
+
 		/varset healSpellName ${iniHeals[${i},1]}
 		/varset healLockoutTimerName heal_${healSpawn.ID}_${healSpellName}
+
 
 		/if (${iniHeals[${i},${bRequireCastIdle}].NotEqual[-]}) {
 			/if (${idleCastingTimer}>0) /continue
@@ -254,6 +257,7 @@ SUB checkHeals
 			/if (${checkHurtPartyMembers[${iniHeals[${i},${bRequireHurtPartyMembers}]},45]}==FALSE) /goto :loopnexti
 		}
 
+
 		/if (${iniHeals[${i},${bUseHealIndex}].NotEqual[-]}) {
 			/varset useHealIndex TRUE
 		} else {
@@ -278,6 +282,8 @@ SUB checkHeals
 
 		/vardata healSpawn Spawn[PC ${healTargetName}]
 		/call e3_getSpellByCastRequestName "${healSpellName}"
+
+		
 		/if (${Macro.Return.Equal[UNKNOWN]} || ${Macro.Return.Equal[NOTREADY]} || ${Macro.Return.Equal[COOLDOWN]}) /goto :loopnexti
 		/vardata healSpell ${Macro.Return}
 
@@ -306,7 +312,9 @@ SUB checkHeals
 		}
 
 		/if (${iniHeals[${i},${bNoCancelChecks}].Equal[-]}) {
-			/varset cancelConditions TARGETLIFEPCT:${healPct}|TARGETHASBUFF:${healSpell.Name}
+			/varset cancelHealHP ${iniHeals[${i},${bCancelAtHP}]}
+			/if (${cancelHealHP}==0) /varset cancelHealHP ${healPct}
+			/varset cancelConditions TARGETLIFEPCT:${cancelHealHP}|TARGETHASBUFF:${healSpell.Name}
 		} else {
 			/varset cancelConditions TARGETHASBUFF:${healSpell.Name}
 		}

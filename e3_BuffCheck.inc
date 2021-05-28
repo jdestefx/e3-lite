@@ -290,7 +290,7 @@ SUB processBuffs
          /if (${Me.PctMana} < ${iniBuffs[${i},${bSelfOverMana}]}) /continue
       }
       /if (${iniBuffs[${i},${bSelfUnderMana}].NotEqual[-]}) {
-         /if (${Me.PctMana} >= ${iniBuffs[${i},${bSelfOverMana}]}) /continue
+         /if (${Me.PctMana} >= ${iniBuffs[${i},${bSelfUnderMana}]}) /continue
       }
       /if (${iniBuffs[${i},${bCastableOnlyResting}].NotEqual[-]}) {
          /if (${Me.CombatState.Equal[COMBAT]}) /continue
