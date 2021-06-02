@@ -36,6 +36,7 @@ Sub assist_Setup
    /declare burnTimer timer outer 0
    /declare burnsActive bool outer FALSE
    /declare burnCheckTimer timer outer 0
+   /declare burnKey string outer -
    /declare persistentAssistTags list outer
    /declare assistTags list outer
    /declare importPastTags string outer -
@@ -430,6 +431,10 @@ SUB checkAutoMez
          /vardata xSpell ${Macro.Return}
 
          /call e3_cast ${targetID} "${useMezSpell}" NETBOTATTACKING,TARGETISASSITTARGET
+         /if (${Me.Class.ShortName.Equal[BRD]}) {
+            /stopcast
+            /delay 2
+         }
 
          /if (${Macro.Return.Equal[NOTREADY]} || ${Macro.Return.Equal[CAST_INTERRUPTED]} ) {
             /delay 2
@@ -569,6 +574,7 @@ SUB checkBurns
    /if (${burnTimer}==0) {
       /bc Burn timer finished.
       /varset burnsActive FALSE
+      /varset burnKey -
       /return
    }
 
@@ -968,6 +974,10 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
          /if (${idleCastingTimer}>0) /continue
       }
 
+      /if (${burnKey.NotEqual[-]}) {
+         /if (${${processArray}[${i},${bBurnKey}].NotEqual[${burnKey}]}) /continue
+      }
+
       /if (${${processArray}[${i},${bNotIfAssistTag}].NotEqual[-]}) {
          /if (${assistTags.Count}>0 || ${persistentAssistTags.Count}>0) {
             /call validateAssistTags ${${processArray}[${i},${bNotIfAssistTag}]} TRUE
@@ -1246,7 +1256,6 @@ SUB processDebuffsForTargetID(int targetID)
    /declare lifeDeficit int local
    /declare lifeRatio int local
 
-
    /for i 1 to ${iniDebuffs.Size}
       /varset currentResistCount 0
       /varset cancelConditions TARGETDEAD
@@ -1321,7 +1330,9 @@ SUB processDebuffsForTargetID(int targetID)
 
       /varset castName ${iniDebuffs[${i},1]}
 
-      /if (${isCastReady[${castName}]}==FALSE) /goto :loopnext
+      /if (${isCastReady[${castName}]}==FALSE) {
+         /goto :loopnext
+      }
 
       /call e3_getSpellByCastRequestName "${castName}"
       /if (${Macro.Return.Equal[UNKNOWN]}) /goto :loopesc
@@ -1341,7 +1352,6 @@ SUB processDebuffsForTargetID(int targetID)
          /deletevar ${timerName}
       }
 
-      |:recastDebuff
       /if (${FindItemCount[${castName}]}>0) {
          /call waitForInt "FindItem[${castName}].TimerReady" 0
       }
@@ -1360,7 +1370,7 @@ SUB processDebuffsForTargetID(int targetID)
       :resistRetry
 
       | CAST THE DEBUFF
-      /call e3_Cast ${targetID} "${castName}" "${cancelConditions}"
+      /call e3_Cast ${targetID} "${castName}" "${cancelConditions}" 0 ${iniDebuffs[${i},${bAssumeSuccess}].Equal[AssumeSuccess]}
       /varset debuffResult ${Macro.Return}
       
       /bc ${castName}(${Spawn[id ${targetID}].CleanName}) RES=> ${debuffResult}
@@ -1545,14 +1555,18 @@ SUB event_slayOn(line, ChatSender)
    }
 /RETURN
 
-#EVENT burnOn "#*#e3 burn on #1#"
 #EVENT burnOn "#*#e3 burns on #1#"
-SUB event_burnOn(string line, string burnTime)
-   /varset burnTimer ${burnTime}s
+SUB event_burnOn(string line, string params)
+   /echo params: ${params} ${params.Token[1, ]} ${params.Token[2, ]}
+   /varset burnTimer ${params.Token[1, ]}s
    /varset burnsActive TRUE
+   /varset burnKey ${params.Token[2, ]}
 
-   /bc Activating burns for ${burnTime} seconds.
+   /if (${Bool[${burnKey}]}==FALSE) /varset burnKey -
+
+   /bc Activating burns for ${burnTime} seconds.  Key: ${burnKey}
 /RETURN
+
 
 #EVENT burnOff "#*#e3 burn off#*#"
 #EVENT burnOff "#*#e3 burns off#*#"
@@ -1574,7 +1588,6 @@ SUB event_allMelee(string line, string burnTime)
 #event retreatHere "[#1#(msg)] e3 retreat here"
 #event retreatHere "<#1#> e3 retreat here"
 SUB event_retreatHere(string line, string who)
-   /echo ${who}
    /varset meleeRetreatLocX ${Spawn[pc ${who}].X}
    /varset meleeRetreatLocY ${Spawn[pc ${who}].Y}
    /varset meleeRetreatLocZ ${Spawn[pc ${who}].Z}

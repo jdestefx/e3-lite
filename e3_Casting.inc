@@ -45,7 +45,7 @@ SUB e3_getSpellByCastRequestName(string castRequest)
    /RETURN UNKNOWN
 /RETURN
 
-SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTimeBeforeCancelChecks)
+SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTimeBeforeCancelChecks, bool assumeSuccess)
 	/declare maxFizzle int local 3
 	/declare fizzleCount int local 0
 	/declare castType string local
@@ -120,16 +120,12 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTime
 	/bc Casting [${castName}] => ${Target.Name}
 	
 	/if (${Me.Class.ShortName.Equal[BRD]} && ${castType.Equal[SPELL]}) {
-		/twist ${Me.Gem[${castName}]}
+		/twist once ${Me.Gem[${castName}]}
 	} else {
 		/casting "${castName}"
 	}
 
-	/varset precastWatchTimer 10
-	/while (${Me.Casting.ID}==NULL && ${precastWatchTimer}>0) {
-		/delay 1
-		/doevents
-	}
+	/delay 3
 
 	/if (${waitTimeBeforeCancelChecks}>0) {
 		/delay ${waitTimeBeforeCancelChecks}
@@ -174,6 +170,7 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTime
 	/if (${Me.Class.ShortName.Equal[BRD]}) {
 		/if (${bardWasTwisting}==TRUE) {
 			/delay 3
+			/echo /twist ${bardWasTwistingList}
 			/twist ${bardWasTwistingList}
 		} else {
 			/twist off
@@ -182,8 +179,8 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTime
 
 	/varset idleCastingTimer ${idleCastingTimerDelay}
 
-	| MANDATORY PAUSE HERE BECAUSE CAST.RESULT NEEDS TO DETECT THE OUTCOME
-	/delay 10
+	| PAUSE HERE BECAUSE CAST.RESULT NEEDS TO DETECT THE OUTCOME
+	/if (${assumeSuccess}==FALSE) /delay 10
 
 	| RESET COMBATTIMER TO WHAT IT WAS BEFORE CAST START
 	/if (${combatTimerValue}>0) /varset combatTimer ${combatDelay}

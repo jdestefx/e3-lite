@@ -26,9 +26,10 @@
 
 
 SUB e3_Setup(string iniSuffix)
+   /declare macroVersion string local 1.48
+
    /echo e3-lite v${macroVersion} Starting.
 
-   /declare macroVersion string local 1.44
    /declare iniFileCharacter string outer e3_bots\${MacroQuest.Server}-${Me.CleanName}${iniSuffix}.ini
    /declare manaClasses string outer CLR,DRU,ENC,PAL,BRD,WIZ,MAG,SHM,NEC,BST,SHD
    /declare manaRegenClasses string outer CLR,DRU,ENC,PAL,WIZ,MAG,SHM,BST,SHD
@@ -127,6 +128,8 @@ SUB e3_Setup(string iniSuffix)
    /declare bNotIfAssistTag string outer 66
    /declare bRequireUW string outer 67
    /declare bCancelAtHP string outer 68
+   /declare bAssumeSuccess string outer 69
+   /declare bBurnKey string outer 70
 
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE
    /declare iniSectionsAutoProcess string outer Buffs,Heals,AutoAbilities,Debuffs,AssistSpells,Burns,AggroAbilities,BuffRequests
