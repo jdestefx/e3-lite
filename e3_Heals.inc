@@ -2,6 +2,9 @@ SUB heals_CharacterSettings(bool backFillOnly)
 	/call WriteToIni "${iniFileCharacter},Misc,XTargetHealsEnabled" NO ${backFillOnly}
 	/call WriteToIni "${iniFileCharacter},Misc,PanicHealSpell" NONE ${backFillOnly}
 	/call WriteToIni "${iniFileCharacter},Misc,PanicHealLifePct" 50 ${backFillOnly}
+	/call WriteToIni "${iniFileCharacter},Misc,AutoRez" NO ${backFillOnly}
+	/call WriteToIni "${iniFileCharacter},Misc,AutoRezSpells" NONE ${backFillOnly}
+	/call WriteToIni "${iniFileCharacter},Misc,AutoRezRequireHealIndex" NONE ${backFillOnly}
 /RETURN
 
 SUB heals_Setup
@@ -23,11 +26,18 @@ SUB heals_Setup
 	/declare panicHealActive bool outer FALSE
 	/declare panicHealSpellName string outer NONE
 	/declare panicHealLifePct int outer 50
+	/declare autoRez bool outer FALSE
+	/declare autoRezSpells string outer NONE
+	/declare autoRezRequireHealIndex int outer 0
+	/declare checkAutoRezTimer timer outer 3s
 
 	/call getIniToVar "${iniFileCharacter},Heal Team,OtherHealerNetBots" otherHealerNetBots NONE
 	/call getIniToVar "${iniFileCharacter},Misc,XTargetHealsEnabled" xTargetHealsEnabled NO
 	/call getIniToVar "${iniFileCharacter},Misc,PanicHealSpell" panicHealSpellName NONE
 	/call getIniToVar "${iniFileCharacter},Misc,PanicHealLifePct" panicHealLifePct 50
+	/call getIniToVar "${iniFileCharacter},Misc,AutoRez" autoRez NO
+	/call getIniToVar "${iniFileCharacter},Misc,AutoRezSpells" autoRezSpells NONE
+	/call getIniToVar "${iniFileCharacter},Misc,AutoRezRequireHealIndex" autoRezRequireHealIndex 0
 
 	/call processHealTargets
 /RETURN
@@ -76,6 +86,69 @@ SUB heal_Background_Events
 	/if (${healsEnabled}==TRUE && ${Defined[iniHeals]}) {
 		/call checkHeals
 	}
+
+	/if (${autoRez}==TRUE) {
+		/call checkAutoRez	
+	}
+/RETURN
+
+SUB checkAutoRez
+	/if (${checkAutoRezTimer}>0) /return
+	/varset checkAutoRezTimer 20
+
+	/declare xSpawnID int local
+	/declare corpseSearch string local pccorpse radius 150
+	/declare useRezSpell string local
+	/declare x int local
+   /declare allcorpses[100] spawn local
+   /declare corpseCount int local
+
+   /if (${autoRezRequireHealIndex}!=0) {
+   	/if (${healIndex}<${autoRezRequireHealIndex}) /return
+   }
+
+   /vardata corpseCount SpawnCount[${corpseSearch}]
+   /if (${corpseCount}==0) /return FALSE
+
+   /for x 1 to ${corpseCount}
+   	/if (${isLockoutExpired[rez_${NearestSpawn[${x},${corpseSearch}].ID}]}==FALSE) {
+   		/continue
+   	} else {
+   		/varset xSpawnID ${NearestSpawn[${x},${corpseSearch}].ID}
+   	}
+   /next x
+
+	/if (${xSpawnID}==NULL) /return
+	
+	/call getReadyRezSpell
+
+	/if (${Macro.Return.Equal[-]}) /return
+
+	/bc AutoRez:  ${xSpawnID} ${Spawn[id ${xSpawnID}].Name}
+	/call e3_cast ${xSpawnID} "${Macro.Return}"
+
+	/echo create lockout: rez_${xSpawnID}
+	/call lockout rez_${xSpawnID} 45s
+/RETURN
+
+SUB getReadyRezSpell
+   /declare i int local 
+
+   /if (${autoRezSpells.Find[,]}==0) {
+      /if (${isCastReady[${autoRezSpells}]}==FALSE) {
+         /return -
+      } else {
+         /return ${autoRezSpells}
+      }
+   } else {
+      /for i 1 to ${Math.Calc[${autoRezSpells.Count[,]}+1]}
+         /if (${isCastReady[${autoRezSpells.Token[${i},,]}]}==TRUE) {
+            /return ${autoRezSpells.Token[${i},,]}
+         }
+      /next i
+   }
+
+   /return -
 /RETURN
 
 SUB checkPanicHeal 
@@ -547,5 +620,20 @@ SUB event_panicHeal(string line, string panicParam)
 
 		/bc New panic heal target: ${Spawn[pc ${panicParam}].CleanName}
 	}
+/RETURN
+
+
+#EVENT autoRezToggle "#*#e3 autorez #1#"
+SUB event_autoRezToggle(string line, string newMode)
+	/if (${newMode.Upper.Equal[ON]}) {
+		/varset autoRez TRUE
+	} else /if (${newMode.Upper.Equal[OFF]}) {
+		/varset autoRez FALSE
+	} else {
+		/bc Unknown AutoRez mode. Use ON or OFF.
+		/return
+	}
+
+	/bc AutoRez is now: ${newMode}.
 
 /RETURN

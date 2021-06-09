@@ -1557,8 +1557,10 @@ SUB event_slayOn(line, ChatSender)
 
 #EVENT burnOn "#*#e3 burns on #1#"
 SUB event_burnOn(string line, string params)
-   /echo params: ${params} ${params.Token[1, ]} ${params.Token[2, ]}
+   /declare burnTime string local 
+
    /varset burnTimer ${params.Token[1, ]}s
+   /varset burnTime ${params.Token[1, ]}
    /varset burnsActive TRUE
    /varset burnKey ${params.Token[2, ]}
 
@@ -1570,7 +1572,7 @@ SUB event_burnOn(string line, string params)
 
 #EVENT burnOff "#*#e3 burn off#*#"
 #EVENT burnOff "#*#e3 burns off#*#"
-SUB event_burnOff(string line, string burnTime)
+SUB event_burnOff(string line)
    /varset burnTimer 0
    /varset burnsActive FALSE
 
@@ -1578,7 +1580,7 @@ SUB event_burnOff(string line, string burnTime)
 /RETURN
 
 #EVENT allMelee "#*#e3 all melee#*#"
-SUB event_allMelee(string line, string burnTime)
+SUB event_allMelee(string line)
    /varset meleeAssist TRUE
    /varset ignoreAssistCalls FALSE
    /bc Will now melee attack on assist.

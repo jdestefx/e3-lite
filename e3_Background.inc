@@ -292,3 +292,9 @@ SUB EVENT_adhocCast(string line, string chatSender, string castName, string cast
    }
 
 /RETURN
+
+#EVENT zoned "#*#You have entered #*#."
+sub event_zoned
+   /echo Zoned.
+   /varset idleCastingTimer ${idleCastingTimerDelay}
+/return
