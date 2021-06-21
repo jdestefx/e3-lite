@@ -290,6 +290,7 @@ SUB checkAutoFireAssist
 
    /if (${Me.TargetOfTarget.ID}==${Me.ID}) /return
    
+   /if (!${Me.Standing}) /stand
    /if (${Stick.Active}==TRUE) /stick off
    /if (${Navigation.Active}==TRUE) /nav stop
 
@@ -371,6 +372,7 @@ SUB checkAutoMez
          /if (${Spawn[id ${xSpawn.ID}].ID}==${assistTarget}) /continue
          /if (${Spawn[id ${xSpawn.ID}].Dead}==TRUE) /continue
          /if (${Spawn[id ${xSpawn.ID}].ID}==NULL) /continue
+         /if (${Spawn[id ${xSpawn.ID}].Type.Equal[Pet]}) /continue
 
          /if (${autoMezMustHaveName.NotEqual[-]}) {
             /if (${checkAutoMezNameMatch[${xSpawn.CleanName}]}==FALSE) /continue

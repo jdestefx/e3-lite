@@ -1,6 +1,6 @@
 Sub casting_Setup
 	/declare idleCastingTimer timer outer 50
-	/declare idleCastingTimerDelay int outer 40
+	/declare idleCastingTimerDelay int outer 50
 
 /return
 
