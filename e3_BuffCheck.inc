@@ -786,7 +786,7 @@ SUB EVENT_buffRequest(string line, string who, string msg)
                /em beams a smile at ${who}.
             }
          } else {
-            /if (${buffQueue.Find[${queueEntry}]}!=NULL) {
+            /if (${buffQueue.Contains[${queueEntry}]}==TRUE) {
                /tell ${who} You're already queued to receive ${spellName}.
                /continue
             } else {

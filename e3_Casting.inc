@@ -46,6 +46,7 @@ SUB e3_getSpellByCastRequestName(string castRequest)
 /RETURN
 
 SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTimeBeforeCancelChecks, bool assumeSuccess)
+
 	/declare maxFizzle int local 3
 	/declare fizzleCount int local 0
 	/declare castType string local

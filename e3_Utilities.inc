@@ -302,6 +302,7 @@ SUB getIniSectionToArray(string iniKey, string arrayName)
 #event expSpammerResponder "#*#You gain experience#*#"
 SUB event_expSpammerResponder
 	/if (${expSpam}==TRUE) {
+		/delay 2
 		/declare newAAExp int local ${Me.AAExp}
 		/declare newExp int local ${Me.Exp}
 

@@ -96,6 +96,11 @@ SUB checkAutoRez
 	/if (${checkAutoRezTimer}>0) /return
 	/varset checkAutoRezTimer 20
 
+	/if (${Me.Moving}==TRUE) /RETURN
+	/if (${Stick.Active}==TRUE) /RETURN
+	/if (${Me.Silenced.ID}!=NULL) /RETURN
+	/if (${Me.Invis}==TRUE) /RETURN
+
 	/declare xSpawnID int local
 	/declare corpseSearch string local pccorpse radius 150
 	/declare useRezSpell string local
@@ -279,7 +284,6 @@ SUB checkHeals
 		/varset healSpellName ${iniHeals[${i},1]}
 		/varset healLockoutTimerName heal_${healSpawn.ID}_${healSpellName}
 
-
 		/if (${iniHeals[${i},${bRequireCastIdle}].NotEqual[-]}) {
 			/if (${idleCastingTimer}>0) /continue
 		}
@@ -316,7 +320,6 @@ SUB checkHeals
 		/if (${iniHeals[${i},${bSelfUnderMana}].NotEqual[-]}) {
 			/if (${Me.PctMana} >= ${iniHeals[${i},${bSelfUnderMana}]}) /goto :loopnexti
 		}
-
 
 		/if (${iniHeals[${i},${bRequireMobsInProximity}].NotEqual[-]}) {
 			/if (${SpawnCount[npc loc ${Me.X} ${Me.Y} radius 40]} < ${iniHeals[${i},${bRequireMobsInProximity}]}) /goto :loopnexti
@@ -509,6 +512,7 @@ SUB getNetBotReadyForHeal(int healPct, int iniHealIndex)
 		/varset netbotName ${NetBots.Client[${i}]}
 		/if (${netbotName.Equal[NULL]}) /break
 
+
 		/varset netbotClass ${NetBots[${netbotName}].Class.ShortName}
 
 		/if (${NetBots[${netbotName}].InZone} == FALSE) /continue
@@ -522,6 +526,7 @@ SUB getNetBotReadyForHeal(int healPct, int iniHealIndex)
 		/if (${iniHeals[${iniHealIndex},${bTargets}].NotEqual[-]}) {
 			/if (${Select[${netbotName},${iniHeals[${iniHealIndex},${bTargets}]}]}==0) /continue
 		}
+
 
 		/if (${iniHeals[${iniHealIndex},${bCheckShortBuffs}].NotEqual[-]}) {
 			/vardata healSpell ${e3_getSpellByCastRequestName[${iniHeals[${iniHealIndex},1]}]}
