@@ -326,13 +326,17 @@ SUB processBuffs
          /varset buffSpellID ${iniBuffs[${i},${bForceSpellID}]}
       }
       
-      /if (${buffSpell.TargetType.Equal[Pet]} || ${iniBuffs[${i},${bTargetType}].Upper.Equal[PET]} ) {
-         /if (${Me.Pet.ID}==NULL) /continue
-         /if (${Me.PetBuff[${buffSpell.Name}]}!=NULL) /continue
-         /varset targetNames ${Me.Pet.Name}|
-         /goto :skipNetBots
-      } else /if (${buffSpell.TargetType.Equal[Self]}) {
-         /varset targetNames ${Me.CleanName}|
+      /if (${iniBuffs[${i},${bIgnoreTargetType}].Equal[-]}) {
+         /if (${buffSpell.TargetType.Equal[Pet]} || ${iniBuffs[${i},${bTargetType}].Upper.Equal[PET]} ) {
+            /if (${Me.Pet.ID}==NULL) /continue
+            /if (${Me.PetBuff[${buffSpell.Name}]}!=NULL) /continue
+            /varset targetNames ${Me.Pet.Name}|
+            /goto :skipNetBots
+         } else /if (${buffSpell.TargetType.Equal[Self]}) {
+            /varset targetNames ${Me.CleanName}|
+         } else {
+            /varset targetNames ${iniBuffs[${i},${bTargets}]}|
+         }
       } else {
          /varset targetNames ${iniBuffs[${i},${bTargets}]}|
       }
@@ -340,6 +344,7 @@ SUB processBuffs
       /if (${buffSpell.TargetType.Equal[Group v1]}) /varset buffSpellRange ${buffSpell.AERange}
       /if (${buffSpell.TargetType.Equal[Group v2]}) /varset buffSpellRange ${buffSpell.AERange}
       /if (${buffSpell.TargetType.Equal[Single]}) /varset buffSpellRange ${buffSpell.MyRange}
+      /if (${buffSpell.TargetType.Equal[Self]} && ${iniBuffs[${i},${bIgnoreTargetType}].NotEqual[-]}) /varset buffSpellRange 50
 
       | TARGETNAMES ARE ALL POSSIBLE TARGETS REGARDLESS OF WHETHER OR NOT THEY HAVE THE BUFF.
       | THIS LOOP REMOVES PEOPLE WHO DONT QUALIFY FOR A CAST, TYPICALLY BECAUSE THEY HAVE THE
@@ -359,6 +364,7 @@ SUB processBuffs
 
          | HAVE THE BUFF?
          /if (${Select[${buffSpellID},${NetBots[${targetName}].Buff}]}>0) {
+
             | REBUFF SECONDS DONT MATER? REMOVE THIS PERSON FROM BUFF CANDIDATES
             /if (${iniBuffs[${i},${bRebuffSeconds}].Equal[-]}) {
                /varset targetNames ${targetNames.Replace[${targetName}|,]}
@@ -529,6 +535,11 @@ SUB processBuffs
          /if (${Me.Gem[${buffCastName}]}==NULL) {
             /call memorizeSpellInGem "${buffCastName}" ${iniBuffs[${i},${bMemInGem}]}
          }
+      }
+      
+      /if (${iniBuffs[${i},${bDoCommand}].NotEqual[-]}) {
+         /docommand ${iniBuffs[${i},${bDoCommand}]}
+         /delay 3
       }
 
       | DIDNT FIND THE BUFF, CAST IT

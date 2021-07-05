@@ -113,10 +113,10 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTime
 	| PRESERVE COMBAT TIMER VALUE SO IT DOESN'T EXPIRE JUST BECAUSE BOT WAS CASTING
 	/varset combatTimerValue ${combatTimer}
 
-	/if (${castSpell.TargetType.NotEqual[SELF]} && ${Target.ID} != ${targetID}) {
+	|/if (${castSpell.TargetType.NotEqual[SELF]} && ${Target.ID} != ${targetID}) {
 		/tar id ${targetID}
 		/delay 1
-	}
+	|}
 
 	/bc Casting [${castName}] => ${Target.Name}
 	

@@ -131,6 +131,7 @@ SUB e3_Setup(string iniSuffix)
    /declare bAssumeSuccess string outer 69
    /declare bBurnKey string outer 70
    /declare bRequireHealIndexOver string outer 71
+   /declare bIgnoreTargetType string outer 72
 
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE
    /declare iniSectionsAutoProcess string outer Buffs,Heals,AutoAbilities,Debuffs,AssistSpells,Burns,AggroAbilities,BuffRequests
