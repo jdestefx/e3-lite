@@ -1447,6 +1447,7 @@ SUB stopCamping
    }
 /RETURN
 
+#event DebuffsOn "[#1#(msg)] Debuffs on #2#"
 #EVENT DebuffsOn "<#1#> Debuffs on #2#"
 #EVENT DebuffsOn "#1# tells you, 'Debuffs on #2#'"
 #EVENT DebuffsOn "#1# tells the group, 'Debuffs on #2#'"
