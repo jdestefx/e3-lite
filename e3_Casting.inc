@@ -41,7 +41,6 @@ SUB e3_getSpellByCastRequestName(string castRequest)
       /varset combatAbilityIndex ${Me.CombatAbility[${castRequest}]}
       /return CombatAbility[${combatAbilityIndex}]
    }
-
    /RETURN UNKNOWN
 /RETURN
 

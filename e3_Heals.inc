@@ -356,12 +356,13 @@ SUB checkHeals
 
 		/if (${iniHeals[${i},${bDoCommand}].NotEqual[-]}) /docommand ${iniHeals[${i},${bDoCommand}]}
 
-		/vardata healSpawn Spawn[PC ${healTargetName}]
 		/call e3_getSpellByCastRequestName "${healSpellName}"
-
-		
 		/if (${Macro.Return.Equal[UNKNOWN]} || ${Macro.Return.Equal[NOTREADY]} || ${Macro.Return.Equal[COOLDOWN]}) /goto :loopnexti
 		/vardata healSpell ${Macro.Return}
+
+		/if (${healSpell.TargetType.Equal[Self]}) /varset healTargetName ${Me.CleanName}
+		
+		/vardata healSpawn Spawn[PC ${healTargetName}]
 
 		/if (${iniHeals[${i},${bRecastDelay}].NotEqual[-]}) {
 			/if (${isLockoutExpired[heal_${healSpawn.ID}_${healSpell.ID}]}==FALSE) /goto :loopnexti
@@ -405,6 +406,7 @@ SUB checkHeals
 			/if (${idleCastingTimer}>0) /return
 			/varset triggerIdleCasting FALSE
 		}
+
 
 		/call e3_Cast ${healSpawn.ID} "${healEntry}" "${cancelConditions}" ${triggerIdleCasting}
 
@@ -457,7 +459,6 @@ SUB checkHurtPartyMembers(string params, int distanceLimit)
 
 SUB getNetBotReadyForHeal(int healPct, int iniHealIndex)
 	/declare i int local 0
-	/declare j int local 0
 	/declare netbotName string local
 	/declare netbotClass string local
 	/declare netbotCount int local ${NetBots.Counts}
@@ -465,9 +466,7 @@ SUB getNetBotReadyForHeal(int healPct, int iniHealIndex)
 	/declare healNames list local
 	/declare li listiterator local
 	/declare b string local
-	/declare healSpell spell local
-	/declare netbotShortBuffIDs string local
-
+	
 	/if (${xTargetHealsEnabled}==TRUE && (${iniHeals[${iniHealIndex},${bXTargetHeal}].NotEqual[-]} || ${iniHeals[${iniHealIndex},${bXTargetOnlyHeal}].NotEqual[-]}) )  {
 		/for i 1 to 12
 			/if (${Me.XTarget[${i}].ID}==NULL) /continue
@@ -527,10 +526,10 @@ SUB getNetBotReadyForHeal(int healPct, int iniHealIndex)
 			/if (${Select[${netbotName},${iniHeals[${iniHealIndex},${bTargets}]}]}==0) /continue
 		}
 
-
 		/if (${iniHeals[${iniHealIndex},${bCheckShortBuffs}].NotEqual[-]}) {
-			/vardata healSpell ${e3_getSpellByCastRequestName[${iniHeals[${iniHealIndex},1]}]}
-			/if (${NetBots[${netbotName}].ShortBuff.Find[${healSpell.ID}]}!=0) /continue
+			/call e3_getSpellByCastRequestName "${iniHeals[${iniHealIndex},1]}"
+			/if (${Macro.Return.Equal[UNKNOWN]}) /continue
+			/if (${NetBots[${netbotName}].ShortBuff.Find[${${Macro.Return}.ID}]}!=0) /continue
 		}
 
 		/if (${iniHeals[${iniHealIndex},${bRequireGroup}].NotEqual[-]}) {

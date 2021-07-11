@@ -889,14 +889,14 @@ SUB check_Dispell
    /if (${assistTarget}==0) /return
    /if (${Target.BuffsPopulated}==FALSE) /return
 
-
    /declare i int local
    /declare hasDispellable bool local FALSE
 
    /for i 1 to ${Target.BuffCount}
-      /if (${Target.Buff[${i}].Name.Upper.Find[MITIGATION OF THE MIGHTY]}!=NULL) /continue
-      /varset hasDispellable TRUE
-      /break
+      /if (${Target.Buff[${i}].Beneficial}==TRUE && ${Target.Buff[${i}].Name.Upper.Find[MITIGATION OF THE MIGHTY]}==NULL) {
+         /varset hasDispellable TRUE
+         /break
+      }
    /next i
 
    /if (${hasDispellable}==FALSE) /return
