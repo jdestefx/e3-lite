@@ -274,6 +274,10 @@ SUB processBuffs
          /if (${Macro.Return}==FALSE) /continue
       }
 
+      /if (${iniBuffs[${i},${bNotIfMounted}].NotEqual[-]}) {
+         /if (${Me.Mount.ID}!=NULL) /continue
+      }
+
       /if (${iniBuffs[${i},${bRequireCastIdle}].NotEqual[-]}) {
          /if (${idleCastingTimer}>0) /continue
       }
@@ -315,10 +319,11 @@ SUB processBuffs
       | OBTAIN BUFF SPELL DETAIL
       /varset buffCastName ${iniBuffs[${i},${bName}]}
 
-      | RESOLVE THE CAST REQUEST INTO A SPELL
-      /call e3_getSpellByCastRequestName "${buffCastName}"
-      /if (${Macro.Return.Equal[UNKNOWN]}) /continue
+      /if (${isCastReady[${buffCastName}]}==FALSE) {
+         /continue
+      }
 
+      /call e3_getSpellByCastRequestName "${buffCastName}"
       /vardata buffSpell ${Macro.Return}
       /varset buffSpellID ${buffSpell.ID}
       
@@ -544,6 +549,14 @@ SUB processBuffs
 
       | DIDNT FIND THE BUFF, CAST IT
       /call e3_Cast ${buffSpawn.ID} "${buffCastName}"
+
+      /if (${iniBuffs[${i},${bNoSitTimer}].NotEqual[-]}) {
+         /call pauseMedBreak ${iniBuffs[${i},${bNoSitTimer}]}
+      }
+      
+      /if (${Macro.Return.Equal[NOTREADY]} && ${Me.Gem[${buffCastName}]}==NULL) {
+         |/echo Spell Not Ready: ${buffCastName} (spell not memorized?)
+      }
 
       /if (${Macro.Return.Equal[CAST_NOTAKEHOLD]}==TRUE) {
          /if (${Defined[${noholdTimerName}]}==TRUE) /deletevar ${noholdTimerName}

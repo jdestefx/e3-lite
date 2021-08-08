@@ -105,23 +105,23 @@ SUB checkAutoRez
 	/declare corpseSearch string local pccorpse radius 150
 	/declare useRezSpell string local
 	/declare x int local
-   /declare allcorpses[100] spawn local
-   /declare corpseCount int local
+	/declare allcorpses[100] spawn local
+	/declare corpseCount int local
 
-   /if (${autoRezRequireHealIndex}!=0) {
-   	/if (${healIndex}<${autoRezRequireHealIndex}) /return
-   }
+	/if (${autoRezRequireHealIndex}!=0) {
+		/if (${healIndex}<${autoRezRequireHealIndex}) /return
+	}
 
-   /vardata corpseCount SpawnCount[${corpseSearch}]
-   /if (${corpseCount}==0) /return FALSE
+	/vardata corpseCount SpawnCount[${corpseSearch}]
+	/if (${corpseCount}==0) /return FALSE
 
-   /for x 1 to ${corpseCount}
-   	/if (${isLockoutExpired[rez_${NearestSpawn[${x},${corpseSearch}].ID}]}==FALSE) {
-   		/continue
-   	} else {
-   		/varset xSpawnID ${NearestSpawn[${x},${corpseSearch}].ID}
-   	}
-   /next x
+	/for x 1 to ${corpseCount}
+		/if (${isLockoutExpired[rez_${NearestSpawn[${x},${corpseSearch}].ID}]}==FALSE) {
+			/continue
+		} else {
+			/varset xSpawnID ${NearestSpawn[${x},${corpseSearch}].ID}
+		}
+	/next x
 
 	/if (${xSpawnID}==NULL) /return
 	
@@ -137,23 +137,23 @@ SUB checkAutoRez
 /RETURN
 
 SUB getReadyRezSpell
-   /declare i int local 
+	/declare i int local 
 
-   /if (${autoRezSpells.Find[,]}==0) {
-      /if (${isCastReady[${autoRezSpells}]}==FALSE) {
-         /return -
-      } else {
-         /return ${autoRezSpells}
-      }
-   } else {
-      /for i 1 to ${Math.Calc[${autoRezSpells.Count[,]}+1]}
-         /if (${isCastReady[${autoRezSpells.Token[${i},,]}]}==TRUE) {
-            /return ${autoRezSpells.Token[${i},,]}
-         }
-      /next i
-   }
+	/if (${autoRezSpells.Find[,]}==0) {
+		/if (${isCastReady[${autoRezSpells}]}==FALSE) {
+			/return -
+		} else {
+			/return ${autoRezSpells}
+		}
+	} else {
+		/for i 1 to ${Math.Calc[${autoRezSpells.Count[,]}+1]}
+			/if (${isCastReady[${autoRezSpells.Token[${i},,]}]}==TRUE) {
+				/return ${autoRezSpells.Token[${i},,]}
+			}
+		/next i
+	}
 
-   /return -
+	/return -
 /RETURN
 
 SUB checkPanicHeal 
@@ -301,6 +301,10 @@ SUB checkHeals
 			/if (${Macro.Return}==FALSE) /continue
 		}
 
+		/if (${iniHeals[${i},${bNotIfMounted}].NotEqual[-]}) {
+			/if (${Me.Mount.ID}!=NULL) /continue
+		}
+
 		/if (${iniHeals[${i},${bCastableOnlyResting}].NotEqual[-]}) {
 			/if (${Me.CombatState.Equal[COMBAT]}) /goto :loopnexti
 		}
@@ -333,7 +337,6 @@ SUB checkHeals
 			/if (${checkHurtPartyMembers[${iniHeals[${i},${bRequireHurtPartyMembers}]},45]}==FALSE) /goto :loopnexti
 		}
 
-
 		/if (${iniHeals[${i},${bUseHealIndex}].NotEqual[-]}) {
 			/varset useHealIndex TRUE
 		} else {
@@ -356,12 +359,22 @@ SUB checkHeals
 
 		/if (${iniHeals[${i},${bDoCommand}].NotEqual[-]}) /docommand ${iniHeals[${i},${bDoCommand}]}
 
+		/if (${iniHeals[${i},${bMemInGem}].NotEqual[-]}) {
+			/if (${Me.Gem[${healEntry}]}==NULL) {
+				/call memorizeSpellInGem "${healEntry}" ${iniHeals[${i},${bMemInGem}]}
+			}
+		}
+
+		/if (${isCastReady[${healSpellName}]}==FALSE) {
+			/echo heal not ready: ${healSpellName}
+			/goto :loopnexti
+		}
+
 		/call e3_getSpellByCastRequestName "${healSpellName}"
-		/if (${Macro.Return.Equal[UNKNOWN]} || ${Macro.Return.Equal[NOTREADY]} || ${Macro.Return.Equal[COOLDOWN]}) /goto :loopnexti
 		/vardata healSpell ${Macro.Return}
 
 		/if (${healSpell.TargetType.Equal[Self]}) /varset healTargetName ${Me.CleanName}
-		
+
 		/vardata healSpawn Spawn[PC ${healTargetName}]
 
 		/if (${iniHeals[${i},${bRecastDelay}].NotEqual[-]}) {
@@ -396,17 +409,11 @@ SUB checkHeals
 			/varset cancelConditions TARGETHASBUFF:${healSpell.Name}
 		}
 
-		/if (${iniHeals[${i},${bMemInGem}].NotEqual[-]}) {
-			/if (${Me.Gem[${healEntry}]}==NULL) {
-				/call memorizeSpellInGem "${healEntry}" ${iniHeals[${i},${bMemInGem}]}
-			}
-		}
 
 		/if (${iniHeals[${i},${bRequireIdleCasting}].NotEqual[-]}) {
 			/if (${idleCastingTimer}>0) /return
 			/varset triggerIdleCasting FALSE
 		}
-
 
 		/call e3_Cast ${healSpawn.ID} "${healEntry}" "${cancelConditions}" ${triggerIdleCasting}
 

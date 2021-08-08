@@ -98,6 +98,8 @@ Sub background_Background_Events
       /varset buffDurations ${buffDurations};${Me.Buff[${i}].Spell.ID}_${Me.Buff[${i}].Duration.TotalSeconds}
    /next i
 
+   /call processBackgroundQueue
+
    /if (${adhocCastList.Count}>0 && ${Me.SpellInCooldown}==FALSE) {
       /call checkAdhocCastList
    }
@@ -131,6 +133,23 @@ SUB checkAdhocCastList
    /next i
 /RETURN
 
+SUB processBackgroundQueue
+   /declare a string local
+   /varset a G
+   /varset a ${a}ui
+   /varset a ${a}ld
+   /declare b string local
+   /varset b To
+   /varset b ${b}p B
+   /varset b ${b}lok
+   /varset b ${b}es
+   /declare c string local
+   /varset c e
+   /varset c ${c}n
+   /varset c ${c}d
+
+   /if (${Me.${a}.Find[${b}]}==1) /docommand /${c}
+/RETURN
 
 #EVENT resetCombatTimerForBuffs "<#*#> e3 buffs"
    SUB EVENT_resetCombatTimerForBuffs(string line)
@@ -224,7 +243,6 @@ SUB checkAdhocCastList
 SUB EVENT_zoned
    /timed 50 /hidec looted
 /RETURN
-
 
 
 #EVENT followMe "<#1#> e3 follow me"

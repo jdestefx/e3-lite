@@ -1,6 +1,7 @@
-| MANAGES MELEE ASSISTING, DEBUFFS, NUKES
+e| MANAGES MELEE ASSISTING, DEBUFFS, NUKES
 
 SUB assist_CharacterSettings(bool backFillOnly)   
+   /call WriteToIni "${iniFileCharacter},Assist,AutoDisarm" NO ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Auto-Assist" YES ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,AutoAssist Percent" 99 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Stick Point" BEHIND ${backFillOnly}
@@ -29,6 +30,7 @@ SUB assist_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Assist,MeleeRetreatPercent" 45 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,MeleeRetreatResumePercent" 80 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,StartupPastTags" - ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,DebuffIgnoreExistingTimers" NO ${backFillOnly}
 
 /RETURN
 
@@ -40,6 +42,7 @@ Sub assist_Setup
    /declare persistentAssistTags list outer
    /declare assistTags list outer
    /declare importPastTags string outer -
+   /declare debuffIgnoreExistingTimers bool outer FALSE
 
    /declare slaySearch string outer 
    /declare combatTimer timer outer
@@ -118,11 +121,11 @@ Sub assist_Setup
 
    /declare raidAssistActive bool outer FALSE
 
-   /declare trapNames string outer a dark entity,a shimmering orb,a formless terror,a low hum,a singularity,a wardstone,a null field,an immobilizer,an explosion,a tanglefoot trap,a blast of heat
-
+   /declare trapNames string outer A BLADE,festering ooze,jagged blades,a dark entity,a shimmering orb,a formless terror,a low hum,a singularity,a wardstone,a null field,an immobilizer,trap
+ 
    /call getIniToVar "${iniFileCharacter},Assist,Slay Index" slayIndex 99
    /call getIniToVar "${iniFileCharacter},Assist,SlayReferencePoint" slayReferencePoint ${Me.CleanName}
-   /call getIniToVar "${iniFileCharacter},Assist,SlaySearch" slaySearch "npc LOS targetable range 41 70 radius 55"
+   /call getIniToVar "${iniFileCharacter},Assist,Slay Search" slaySearch "npc LOS targetable range 41 70 radius 55"
    /call getIniToVar "${iniFileCharacter},Assist,Stick Point" assistStickPoint BEHIND
    /call getIniToVar "${iniFileCharacter},Assist,Melee" meleeAssist YES
    /call getIniToVar "${iniFileCharacter},Assist,Melee Distance" assistStickDistance 8
@@ -149,6 +152,7 @@ Sub assist_Setup
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezTimerMarginSeconds" autoMezTimerMarginSeconds 10
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezMustHaveName" autoMezMustHaveName -
    /call getIniToVar "${iniFileCharacter},Assist,StartupPastTags" importPastTags -
+   /call getIniToVar "${iniFileCharacter},Assist,DebuffIgnoreExistingTimers" debuffIgnoreExistingTimers FALSE
 
    /varset slayIndex ${Math.Calc[${slayIndex}-1]}
    
@@ -213,7 +217,11 @@ Sub assist_Background_Events
    }
 
    /if (${autoDisarm}==TRUE) {
-      /call checkAutoDisarm
+      /if (${Me.AbilityReady[Sense Traps]}==TRUE) {
+         /doability "sense traps"
+         /delay 5
+      }
+      /if (${Me.AbilityReady[Disarm Traps]}==TRUE) /call checkAutoDisarm
    }
 
    | CHECK TANK ACTIONS
@@ -429,6 +437,10 @@ SUB checkAutoMez
             /varset useMezSpell ${Macro.Return}   
          }
 
+         /if (${isCastReady[${useMezSpell}]}==FALSE) {
+            /RETURN
+         }
+
          /call e3_getSpellByCastRequestName "${useMezSpell}"
          /vardata xSpell ${Macro.Return}
 
@@ -549,27 +561,33 @@ SUB checkMeleeRetreat
 /RETURN
 
 SUB checkAutoDisarm
-   /if (${Me.AbilityReady[Sense Traps]}==TRUE) {
-      /doability "sense traps"
-      /delay 3
-   }
-
-
-   /if (${Me.AbilityReady[Disarm Traps]}==FALSE) /return
    /declare i int local 0
+   /declare j int local 1
    /declare tName string local
+   /declare xspawn spawn local
 
    /for i 1 to ${Math.Calc[${trapNames.Count[,]}+1]}
       /varset tName ${trapNames.Token[${i},,]}
-      /if (${Spawn[${tName}].ID}!=NULL) {
-         /if (${Spawn[${tName}].Distance}<75) {
-            /tar ${tName}
-            /delay 2
+
+      /varset j 1
+      /while (1) {
+         
+         /if (${NearestSpawn[${j},radius 50].ID}==NULL) /break
+         /vardata xspawn NearestSpawn[${j},radius 50]
+
+         /if (${xspawn.CleanName.Find[${tName}]}!=NULL) {
+            /tar id ${xspawn.ID}
+            /delay 3
             /doability "disarm traps"
+            /delay 3
             /RETURN
          }
+
+         /varset j ${Math.Calc[${j}+1]}
       }
+
    /next i
+
 /RETURN
 
 SUB checkBurns 
@@ -972,6 +990,10 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
 
       /if (${assistSpellName.Equal[-]}) /break
 
+      /if (${${processArray}[${i},${bNotIfMounted}].NotEqual[-]}) {
+         /if (${Me.Mount.ID}!=NULL) /continue
+      }
+
       /if (${${processArray}[${i},${bRequireCastIdle}].NotEqual[-]}) {
          /if (${idleCastingTimer}>0) /continue
       }
@@ -1065,14 +1087,11 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
          }
       }
 
-
-      | RESOLVE THE NUKE NAME REQUEST INTO A SPELL OBJECT
-      /call e3_getSpellByCastRequestName "${assistSpellName}"
-
-      /if (${Macro.Return.Equal[UNKNOWN]}) {
-         /echo unknown spell: ${assistSpellName} 
+      /if (${isCastReady[${assistSpellName}]}==FALSE) {
          /continue
       }
+
+      /call e3_getSpellByCastRequestName "${assistSpellName}"
       /vardata assistSpell ${Macro.Return}
 
       | BUILD TIMER NAME IN EVENT OF RECAST DELAY OR NOTAKEHOLD
@@ -1214,27 +1233,26 @@ SUB check_autoAbilities
    :loopesci
 /RETURN
 
-SUB clearLongTermSpellTimers(int targetID, string debuffArrayName)
+SUB clearLongTermSpellTimers(int targetID)
    /declare timerName string local
    /declare castSpell spell local
    /declare castName string local
    /declare i int local 
    
-   /for i 1 to ${${debuffArrayName}.Size}
-      /varset castName ${${debuffArrayName}[${i}].Arg[1,|]}
+   /for i 1 to ${iniDebuffs.Size}
+      /varset castName ${iniDebuffs[${i},${bName}]}
+      /if (${castName.Equal[-]}) /break      
 
       /call e3_getSpellByCastRequestName "${castName}"
-      /if (${Macro.Return.Equal[UNKNOWN]}) /goto :loopend
+      /if (${Macro.Return.Equal[NULL]}) /continue
+      
       /vardata castSpell ${Macro.Return}
 
       /varset timerName detriTimer_${targetID}_${castSpell.ID}
 
-      /if (${Defined[${timerName}]}==TRUE) {
-         /bc Clearing long term spell timer ${timerName} (${castName} @ ${Spawn[id ${targetID}].Name})
-         /deletevar ${timerName}
-      }
+      |/bc Clearing long term spell timer ${timerName} (${castName} @ ${Spawn[id ${targetID}].Name})
+      /call wipeLockout ${timerName}
 
-      :loopend
    /next i
 /RETURN
 
@@ -1337,7 +1355,6 @@ SUB processDebuffsForTargetID(int targetID)
       }
 
       /call e3_getSpellByCastRequestName "${castName}"
-      /if (${Macro.Return.Equal[UNKNOWN]}) /goto :loopesc
       /vardata castSpell ${Macro.Return}
 
       /varset spellTime ${castSpell.Duration.TotalSeconds}
@@ -1449,6 +1466,8 @@ SUB stopCamping
 
 #event DebuffsOn "[#1#(msg)] Debuffs on #2#"
 #EVENT DebuffsOn "<#1#> Debuffs on #2#"
+#event DebuffsOn "[#1#(msg)] e3 debuffs on #2#"
+#EVENT DebuffsOn "<#1#> e3 debuffs on #2#"
 #EVENT DebuffsOn "#1# tells you, 'Debuffs on #2#'"
 #EVENT DebuffsOn "#1# tells the group, 'Debuffs on #2#'"
 SUB Event_DebuffsOn(line, ChatSender, targetID)
@@ -1462,7 +1481,9 @@ SUB Event_DebuffsOn(line, ChatSender, targetID)
    | CHECK RANGE TO THE DEBUFF TARGET.
    /if (${Spawn[id ${targetID}].Distance} > ${maxAssistDistance}) /RETURN OUT_OF_ASSIST_RANGE
 
-   |/call clearLongTermSpellTimers "${targetID}" "debuffsOnCommand"
+   /if (${debuffIgnoreExistingTimers}==TRUE) {
+      /call clearLongTermSpellTimers "${targetID}" "debuffsOnCommand"
+   }
 
    | CHECK IF THE DEBUFF_TARGETS ARRAY IS ALREADY DEFINED
    /if (${debuffTargetIDs.Find[${targetID}_${Zone.ID};]}) /RETURN ALREADY_DEBUFFING

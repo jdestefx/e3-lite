@@ -132,7 +132,8 @@ SUB e3_Setup(string iniSuffix)
    /declare bBurnKey string outer 70
    /declare bRequireHealIndexOver string outer 71
    /declare bIgnoreTargetType string outer 72
-
+   /declare bNotIfMounted string outer 73
+   
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE
    /declare iniSectionsAutoProcess string outer Buffs,Heals,AutoAbilities,Debuffs,AssistSpells,Burns,AggroAbilities,BuffRequests
 
@@ -158,17 +159,19 @@ SUB e3_Setup(string iniSuffix)
    /notify AdvancedDisplayOptionsWindow ADOW_MaxFPSSlider newvalue ${Math.Calc[${foregroundFPS}-9]}
    /notify AdvancedDisplayOptionsWindow ADOW_ActorClipPlaneSlider newvalue ${actorClipPlane}
 
-   /render bg ${renderBG}
-   /render fg ${renderFG}
-   /maxfps fg ${foregroundFPS}
-   /maxfps bg ${backgroundFPS}
+   /if (${Bool[${Plugin[mq2fps]}]}==TRUE) {
+      /render bg ${renderBG}
+      /render fg ${renderFG}
+      /maxfps fg ${foregroundFPS}
+      /maxfps bg ${backgroundFPS}
+   }
    
    /squelch /stick set autopause off
    /squelch /moveto dist 3
 
-   /netbots on
-   /netbots send=on
-   /netbots grab=on
+   /squelch /netbots on
+   /squelch /netbots send=on
+   /squelch /netbots grab=on
       
    /if (${importPastTags.NotEqual[-]}) {
       /bc Startup INI added PAST tags: ${importPastTags.Lower}
@@ -265,7 +268,7 @@ SUB check_Plugins
 
    /if (${Bool[${EQBC}]}) {
       /if (!${EQBC.Connected}) {
-         /bccmd connect 127.0.0.1 2112
+         /bccmd connect
          /delay 100 ${EQBC.Connected}
          /delay 5
          /if (!${EQBC.Connected}) /echo ***WARNING*** Could not connect to EQBCS! Please open EQBCS and try again.  Macro functionality may be limited...

@@ -17,7 +17,7 @@ SUB getSpellDurationByRequestName(string castRequest)
 	/declare s spell local
 	/call e3_getSpellByCastRequestName "${castRequest}"
 
-	/if (${Macro.Return.Equal[NULL]}) /return 0
+	/if (${Macro.Return}==NULL) /return 0
 	/vardata s ${Macro.Return}
 
 	/return ${s.MyDuration.TotalSeconds}
@@ -32,7 +32,6 @@ SUB e3_getCastTypeByCastRequest(string castRequest)
 /RETURN
 
 
-
 SUB e3_getSpellByCastRequestName(string castRequest) 
    /if (${FindItemCount[=${castRequest}]}>0) /return FindItem[=${castRequest}].Spell
    /if (${Spell[${castRequest}].ID}) /return Spell[${castRequest}]
@@ -43,6 +42,26 @@ SUB e3_getSpellByCastRequestName(string castRequest)
    }
    /RETURN UNKNOWN
 /RETURN
+
+|SUB e3_getSpellByCastRequestName(string castRequest) 
+|   /if (${FindItemCount[=${castRequest}]}>0) {
+|   	/if (${FindItem[=${castRequest}].TimerReady}>0) /return NULL
+|   	/return FindItem[=${castRequest}].Spell
+|   }
+|
+|   /if (${Me.Gem[${castRequest}]}!=NULL) {
+|      /if (${Me.SpellReady[${castRequest}]}==FALSE) /return NULL
+|      /return Spell[${castRequest}]
+|   }
+|
+|   /if (${Me.AltAbility[${castRequest}].ID}) /return Me.AltAbility[${castRequest}].Spell
+|
+|   /if (${Me.CombatAbility[${castRequest}]}) { 
+|      /varset combatAbilityIndex ${Me.CombatAbility[${castRequest}]}
+|      /return CombatAbility[${combatAbilityIndex}]
+|   }
+|   /RETURN NULL
+|/RETURN
 
 SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTimeBeforeCancelChecks, bool assumeSuccess)
 
@@ -66,7 +85,7 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTime
 
 	| RESOLVE A SPELL OBJECT BASED ON THE REQUESTED CAST NAME
 	/call e3_getSpellByCastRequestName "${castName}"
-	/if (${Macro.Return.Equal[UNKNOWN]}) /return UNKNOWN
+	/if (${Macro.Return.Equal[NULL]}) /return UNKNOWN
 	/vardata castSpell ${Macro.Return}
 
 	| IF IM NOT THE TARGET SEE IF THE TARGET IS IN RANGE
@@ -207,7 +226,7 @@ SUB isCastReady(string request)
 	/call e3_getCastTypeByCastRequest "${request}"
 	/varset castType ${Macro.Return}
 
-	/if (${castType.Equal[UNKNOWN]}) /return FALSE
+	/if (${castType.Equal[NULL]}) /return FALSE
 
 	/if (${castType.Equal[SPELL]} && ${Me.SpellReady[${request}]}==FALSE) /return FALSE
 	/if (${castType.Equal[ALTABILITY]} && ${Me.AltAbilityReady[${request}]}==FALSE) /return FALSE
