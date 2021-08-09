@@ -243,7 +243,6 @@ SUB determineHealerIndex
 		}
 		:loopend
 	/next i
-
 /RETURN
 
 SUB checkHeals
@@ -526,7 +525,7 @@ SUB getNetBotReadyForHeal(int healPct, int iniHealIndex)
 
 		/if (${Spawn[${netbotName}].Dead}==TRUE) /continue
 
-		/if (${NetBots[${netbotName}].State.Equal[DEAD]}==TRUE) /continue
+		/if (${NetBots[${netbotName}].State.Equal[DEAD]}==TRUE || ${NetBots[${netbotName}].State.Equal[STUN]} && ${NetBots[${netbotName}].CurrentHPs} < -1) /continue
 
 		/if (${NetBots[${netbotName}].Invulnerable}==1) /continue
 
