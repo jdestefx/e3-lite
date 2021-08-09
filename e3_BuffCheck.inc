@@ -277,7 +277,6 @@ SUB processBuffs
       /if (${iniBuffs[${i},${bNotIfMounted}].NotEqual[-]}) {
          /if (${Me.Mount.ID}!=NULL) /continue
       }
-
       /if (${iniBuffs[${i},${bRequireCastIdle}].NotEqual[-]}) {
          /if (${idleCastingTimer}>0) /continue
       }
@@ -318,10 +317,6 @@ SUB processBuffs
 
       | OBTAIN BUFF SPELL DETAIL
       /varset buffCastName ${iniBuffs[${i},${bName}]}
-
-      /if (${isCastReady[${buffCastName}]}==FALSE) {
-         /continue
-      }
 
       /call e3_getSpellByCastRequestName "${buffCastName}"
       /vardata buffSpell ${Macro.Return}
@@ -535,6 +530,10 @@ SUB processBuffs
       }
 
       /if (${iniBuffs[${i},${bNoCast}].NotEqual[-]}) /continue
+
+      /if (${isCastReady[${buffCastName}]}==FALSE && ${iniBuffs[${i},${bMemInGem}].Equal[-]}) {
+         /continue
+      }
 
       /if (${iniBuffs[${i},${bMemInGem}].NotEqual[-]}) {
          /if (${Me.Gem[${buffCastName}]}==NULL) {

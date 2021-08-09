@@ -357,19 +357,6 @@ SUB checkHeals
 			/varset healTargetName ${healTargetName.Arg[1,;]}
 		}
 
-		/if (${iniHeals[${i},${bDoCommand}].NotEqual[-]}) /docommand ${iniHeals[${i},${bDoCommand}]}
-
-		/if (${iniHeals[${i},${bMemInGem}].NotEqual[-]}) {
-			/if (${Me.Gem[${healEntry}]}==NULL) {
-				/call memorizeSpellInGem "${healEntry}" ${iniHeals[${i},${bMemInGem}]}
-			}
-		}
-
-		/if (${isCastReady[${healSpellName}]}==FALSE) {
-			/echo heal not ready: ${healSpellName}
-			/goto :loopnexti
-		}
-
 		/call e3_getSpellByCastRequestName "${healSpellName}"
 		/vardata healSpell ${Macro.Return}
 
@@ -380,6 +367,20 @@ SUB checkHeals
 		/if (${iniHeals[${i},${bRecastDelay}].NotEqual[-]}) {
 			/if (${isLockoutExpired[heal_${healSpawn.ID}_${healSpell.ID}]}==FALSE) /goto :loopnexti
 		}
+
+		/if (${iniHeals[${i},${bMemInGem}].NotEqual[-]}) {
+			/if (${Me.Gem[${healEntry}]}==NULL) {
+				/call memorizeSpellInGem "${healEntry}" ${iniHeals[${i},${bMemInGem}]}
+			}
+		}
+
+		/if (${isCastReady[${healSpellName}]}==FALSE) {
+			/goto :loopnexti
+		}
+
+
+		/if (${iniHeals[${i},${bDoCommand}].NotEqual[-]}) /docommand ${iniHeals[${i},${bDoCommand}]}
+
 
 		/if (${healSpawn.Distance3D} > ${healSpell.MyRange} && ${healSpawn.Distance3D} > ${healSpell.AERange}) /goto :loopnexti
 		|/if (${healSpawn.Distance3D} > ${healSpell.MyRange}) /goto :loopnexti

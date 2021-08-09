@@ -1087,31 +1087,29 @@ SUB checkAssistSpells(string processArray, bool stopAfterActionTaken)
          }
       }
 
-      /if (${isCastReady[${assistSpellName}]}==FALSE) {
-         /continue
-      }
-
       /call e3_getSpellByCastRequestName "${assistSpellName}"
       /vardata assistSpell ${Macro.Return}
 
-      | BUILD TIMER NAME IN EVENT OF RECAST DELAY OR NOTAKEHOLD
+      | CHECK TIMER/LOCKOUT
       /varset assistTimerName detriTimer_${assistTarget}_${assistSpell.ID}
-
-
-      | TIMER FOR THIS? SKIP...
       /if (${Defined[${assistTimerName}]}==TRUE) {
          /if (${${assistTimerName}}>0) /continue
          /deletevar ${assistTimerName}
       }
 
-      :resistRetry
 
       /if (${${processArray}[${i},${bMemInGem}].NotEqual[-]}) {
          /if (${Me.Gem[${assistSpellName}]}==NULL) {
             /call memorizeSpellInGem "${assistSpellName}" ${${processArray}[${i},${bMemInGem}]}
          }
       }
-      
+
+      /if (${isCastReady[${assistSpellName}]}==FALSE) {
+         /continue
+      }
+
+      :resistRetry
+
       /call e3_cast ${assistTarget} "${assistSpellName}" "${cancelConditions}"
 
       /varset castResult ${Macro.Return}
