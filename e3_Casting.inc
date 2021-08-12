@@ -220,13 +220,21 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTime
 	/return CAST_UNKNOWN
 /RETURN
 
+SUB isRealSpell(string request)
+	/declare castType string local
+	/call e3_getCastTypeByCastRequest "${request}"
+	/varset castType ${Macro.Return}
+	/if (${castType.Equal[UNKNOWN]}) /return FALSE
+	/return TRUE
+/RETURN
+
 SUB isCastReady(string request)
 	/declare castType string local
 
 	/call e3_getCastTypeByCastRequest "${request}"
 	/varset castType ${Macro.Return}
 
-	/if (${castType.Equal[NULL]}) /return FALSE
+	/if (${castType.Equal[UNKNOWN]}) /return FALSE
 
 	/if (${castType.Equal[SPELL]} && ${Me.SpellReady[${request}]}==FALSE) /return FALSE
 	/if (${castType.Equal[ALTABILITY]} && ${Me.AltAbilityReady[${request}]}==FALSE) /return FALSE

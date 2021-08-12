@@ -1,5 +1,6 @@
 
 Sub buffs_Setup
+
    /declare acceptBuffRequests bool outer TRUE
    /declare buffQueue list outer
    /declare buffRequestRequiresGuildMatch bool outer TRUE
@@ -26,6 +27,23 @@ Sub buffs_Setup
 
    /if (${Defined[iniBuffRequests]}==NULL || ${iniBuffRequests[1,1].Equal[-]}) /varset acceptBuffRequests FALSE
 
+   /call validateBuffs
+
+/RETURN
+
+SUB validateBuffs
+
+   /declare i int local 
+
+   /for i 1 to 64
+      /if (${iniBuffs[${i},1].Equal[-]}) /continue
+
+      /if (${isRealSpell[${iniBuffs[${i},${bName}]}]}==FALSE) {
+         /docommand /timed 10 /echo Error: >>>${iniBuffs[${i},1]}<<< does not appear to be a valid spell/item/abilty in [Buffs]. Check spelling?
+         /varset iniBuffs[${i},${bEnabled}] NO
+      }
+
+   /next i
 /RETURN
 
 SUB buffCheck_CharacterSettings(bool backFillOnly)
@@ -252,6 +270,7 @@ SUB processBuffs
       /varset skipTargetProcessing FALSE
 
       /if (${iniBuffs[${i},1].Equal[-]}) /break
+      /if (${iniBuffs[${i},${bEnabled}].Equal[NO]}) /continue
 
       | DONT BUFF IN COMBAT UNLESS ALLOWED
       /if (${useStrictCombatCheck}==TRUE && ${Me.CombatState.Equal[COMBAT]}) {

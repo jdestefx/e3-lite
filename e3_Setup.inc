@@ -26,7 +26,7 @@
 
 
 SUB e3_Setup(string iniSuffix)
-   /declare macroVersion string local 1.48
+   /declare macroVersion string local 1.57
 
    /echo e3-lite v${macroVersion} Starting.
 
@@ -42,7 +42,6 @@ SUB e3_Setup(string iniSuffix)
    /declare castWhileMovingClasses string outer ROG,MNK,BRD
    /declare tankClasses string outer WAR,PAL,SHD
    /declare knightClasses string outer PAL,SHD
-   /declare classes_Debuffs string outer CLR,BST,DRU,ENC,MAG,NEC,PAL,RNG,SHM,SHD
    /declare classes_Nukes string outer CLR,DRU,NEC,WIZ,MAG,ENC,SHM,PAL,RNG,BST
    /declare classes_DoTs string outer CLR,BST,DRU,ENC,NEC,RNG,SHM,SHD
    /declare classes_Buffs string outer CLR,BRD,BER,BST,DRU,ENC,MAG,NEC,PAL,RNG,ROG,SHM,WAR,WIZ,SHD,MNK
@@ -53,11 +52,8 @@ SUB e3_Setup(string iniSuffix)
    /declare canDoBuffs bool outer ${classes_Buffs.Find[${myClass}]}
    |/declare canDoHeals bool outer TRUE ${classes_Heals.Find[${myClass}]}
    /declare canDoHeals bool outer TRUE 
-   /declare canDoDebuffs bool outer ${classes_Debuffs.Find[${myClass}]}
    /declare canDoNukes bool outer ${classes_Nukes.Find[${myClass}]}
    /declare canDoDoTs bool outer ${classes_DoTs.Find[${myClass}]}
-   |/declare canDoAutoAbilities bool outer ${classes_MeleeAssist.Find[${myClass}]}
-   /declare canDoAutoAbilities bool outer TRUE
    /declare canCastWhileMoving bool outer ${castWhileMovingClasses.Find[${myClass}]}
 
    /declare bName string outer 1
@@ -133,6 +129,7 @@ SUB e3_Setup(string iniSuffix)
    /declare bRequireHealIndexOver string outer 71
    /declare bIgnoreTargetType string outer 72
    /declare bNotIfMounted string outer 73
+   /declare bEnabled string outer 74
    
    /declare autoKeywordIgnoreValues ON,OFF,YES,NO,NONE
    /declare iniSectionsAutoProcess string outer Buffs,Heals,AutoAbilities,Debuffs,AssistSpells,Burns,AggroAbilities,BuffRequests
@@ -160,10 +157,10 @@ SUB e3_Setup(string iniSuffix)
    /notify AdvancedDisplayOptionsWindow ADOW_ActorClipPlaneSlider newvalue ${actorClipPlane}
 
    /if (${Bool[${Plugin[mq2fps]}]}==TRUE) {
-      /render bg ${renderBG}
-      /render fg ${renderFG}
-      /maxfps fg ${foregroundFPS}
-      /maxfps bg ${backgroundFPS}
+      /squelch /render bg ${renderBG}
+      /squelch /render fg ${renderFG}
+      /squelch /maxfps fg ${foregroundFPS}
+      /squelch /maxfps bg ${backgroundFPS}
    }
    
    /squelch /stick set autopause off
@@ -178,7 +175,7 @@ SUB e3_Setup(string iniSuffix)
       /invoke ${persistentAssistTags.Append[${importPastTags.Lower}]}
    }
 
-   /echo Startup complete.
+   /echo e3-lite startup complete.
 
 /RETURN
 

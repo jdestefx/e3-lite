@@ -1,6 +1,6 @@
-e| MANAGES MELEE ASSISTING, DEBUFFS, NUKES
+| MANAGES MELEE ASSISTING, DEBUFFS, NUKES
 
-SUB assist_CharacterSettings(bool backFillOnly)   
+SUB assist_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Assist,AutoDisarm" NO ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,Auto-Assist" YES ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,AutoAssist Percent" 99 ${backFillOnly}
@@ -31,6 +31,9 @@ SUB assist_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Assist,MeleeRetreatResumePercent" 80 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,StartupPastTags" - ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,DebuffIgnoreExistingTimers" NO ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoAreaDebuff" NO ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoAreaDebuffRange" 50 ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Assist,AutoAreaDebuffSpawnSearch" "npc radius 50 los range 1 80" ${backFillOnly}
 
 /RETURN
 
@@ -72,7 +75,7 @@ Sub assist_Setup
    /declare autoAssistPercent int outer 99
    /declare beneficialStrip string outer
    /declare doBeneficialStrip bool outer TRUE
-   /declare debuffTargetIDs string outer
+   /declare debuffTargetIDs list outer
    /declare checkDebuffLockoutTimer timer outer
    /declare tankMode bool outer FALSE
    /declare tankCheckTimer timer outer
@@ -82,12 +85,16 @@ Sub assist_Setup
    /declare ignoreAssistCalls bool outer FALSE
    /declare maintainAssistLOS bool outer TRUE
    /declare autoDisarm bool outer FALSE
+   /declare autoAreaDebuff bool outer FALSE
+   /declare autoAreaDebuffRange int outer 50
+   /declare autoAreaDebuffSpawnSearch string outer NONE
+   /declare autoDebuffCheckTimer timer outer 0
 
    /declare meleeRetreat bool outer FALSE
    /declare meleeRetreatPercent int outer 90
    /declare meleeRetreatResumePercent int outer 100
    /declare meleeRetreatLocX string outer -
-   /declare meleeRetreatLocY string outer -
+   /declare meleeRetreatLocY string outer -d
    /declare meleeRetreatLocZ string outer -
    /declare amMeleeRetreating bool outer FALSE
 
@@ -121,7 +128,7 @@ Sub assist_Setup
 
    /declare raidAssistActive bool outer FALSE
 
-   /declare trapNames string outer A BLADE,festering ooze,jagged blades,a dark entity,a shimmering orb,a formless terror,a low hum,a singularity,a wardstone,a null field,an immobilizer,trap
+   /declare trapNames string outer DESERT CURSE,A BLADE,festering ooze,jagged blades,a dark entity,a shimmering orb,a formless terror,a low hum,a singularity,a wardstone,a null field,an immobilizer,trap
  
    /call getIniToVar "${iniFileCharacter},Assist,Slay Index" slayIndex 99
    /call getIniToVar "${iniFileCharacter},Assist,SlayReferencePoint" slayReferencePoint ${Me.CleanName}
@@ -153,6 +160,9 @@ Sub assist_Setup
    /call getIniToVar "${iniFileCharacter},Assist,AutoMezMustHaveName" autoMezMustHaveName -
    /call getIniToVar "${iniFileCharacter},Assist,StartupPastTags" importPastTags -
    /call getIniToVar "${iniFileCharacter},Assist,DebuffIgnoreExistingTimers" debuffIgnoreExistingTimers FALSE
+   /call getIniToVar "${iniFileCharacter},Assist,AutoAreaDebuff" autoAreaDebuff NO
+   /call getIniToVar "${iniFileCharacter},Assist,AutoAreaDebuffRange" autoAreaDebuffRange 50
+   /call getIniToVar "${iniFileCharacter},Assist,AutoAreaDebuffSpawnSearch" autoAreaDebuffSpawnSearch NONE
 
    /varset slayIndex ${Math.Calc[${slayIndex}-1]}
    
@@ -165,7 +175,6 @@ Sub assist_Setup
       /varset tankMode FALSE
       /bc >>> AutoFire is enabled: Disablign Melee/Tank. Use "e3 toggle autofire [ON|OFF]" to toggle.<<<
    }
-
 /return
 
 SUB stickingToPlayer 
@@ -243,27 +252,42 @@ Sub assist_Background_Events
    /if (${autoMez}==TRUE) /call checkAutoMez
    /if (${slayMode}==TRUE && ${meleeAssist}==TRUE) /call check_slay
    /if (${assistTarget}!=0) /call check_AssistStatus
+   /if (${assistTarget}!=0 && ${autoAreaDebuff}==TRUE) /call checkAutoDebuffs
    /if (${assistTarget}==0 && ${assistQueue.Length}>0) /call checkAssistQueue
    /if (${checkAssistSpellsTimer}==0 && ${Defined[iniAssistSpells]}==TRUE) /call checkAssistSpells iniAssistSpells
-   /if (${canDoAutoAbilities}==TRUE) /call check_autoAbilities
-   /if (${canDoDebuffs}==TRUE && ${Me.Moving}==FALSE && ${debuffTargetIDs.Length}>0) /call checkDebuffs
+   /call check_autoAbilities
+
+   /if (${Me.Moving}==FALSE && ${debuffTargetIDs.Count}>0) /call checkDebuffs
    /if (${beneficialStrip.NotEqual[NONE]} && ${doBeneficialStrip}==TRUE) /call check_Dispell
    /if (${autoFireAssist}==TRUE && ${assistTarget}!=0) /call checkAutoFireAssist
 /return
 
+SUB checkAutoDebuffs
+   /if (${autoDebuffCheckTimer}>0) /return
+   /varset autoDebuffCheckTimer 1s
+
+   /declare xspawn spawn local
+   /declare i int local
+
+   /declare mobCountInArea int local ${SpawnCount[${autoAreaDebuffSpawnSearch}]}
+
+   /if (${mobCountInArea}==0) /return
+
+   /for i 1 to ${mobCountInArea}
+      /vardata xspawn NearestSpawn[${i},${autoAreaDebuffSpawnSearch}]
+
+      /if (${debuffTargetIDs.Contains[${xspawn.ID}_${Zone.ID}]}) {
+         /echo AutoDebuffWontAdd: ${xspawn.ID}
+      } else {
+         /echo AutoAdding: ${xspawn.ID}
+         /call addTargetForDebuffs ${xspawn.ID}
+      }
+   /next i
+
+/RETURN
+
 SUB checkRaidAssist
    /declare i int local 0
-   |/if (${Me.RaidAssistTarget[1].ID}==NULL && ${assistTarget}!=0) {
-   |   /call setAssistOff
-   |   /return TRUE
-   |}
-   |
-   |/if (${Me.RaidAssistTarget[1].ID} != ${assistTarget}) {
-   |   /if (${Me.RaidAssistTarget[1].Dead}==FALSE) {
-   |      /call setAssistOn ${Me.RaidAssistTarget[1].ID}
-   |      /return TRUE
-   |   }
-   |}
    
    /if (${Me.RaidMarkNPC[1].ID}==NULL && ${assistTarget}!=0) {
       /call setAssistOff
@@ -276,16 +300,6 @@ SUB checkRaidAssist
          /return TRUE
       }
    }
-
-
-   |/for i 1 to 3
-   |   /if (${raidAssistActive}==TRUE && ${Me.RaidMarkNPC[${i}].ID} != ${assistTarget}) {
-   |      /if (${Me.RaidMarkNPC[${i}].Dead}==FALSE) {
-   |         /call setAssistOn ${Me.RaidMarkNPC[${i}].ID}
-   |         /return TRUE
-   |      }
-   |   }
-   |/next i
 
    /RETURN FALSE
 /RETURN
@@ -747,7 +761,6 @@ SUB setAssistOn(targetID)
 /RETURN
 
 SUB check_AssistStatus
-
    | DID I CHANGE ZONES? 
    /if (${Zone.ID} != ${assistBeganInZoneID}) {
       /bc I'm no longer in the right zone. Stopping assist.
@@ -862,7 +875,7 @@ SUB setAssistOff
 
    /invoke ${slayProxIDs.Clear}
    /varset slayLockout FALSE
-   /varset debuffTargetIDs
+   /invoke ${debuffTargetIDs.Clear}
    /varset assistQueue
    /varset assistTime 0
    /varset assistTarget 0
@@ -1169,28 +1182,25 @@ SUB checkDebuffs
    /if (${checkDebuffLockoutTimer}>0) /return
    /varset checkDebuffLockoutTimer 3
    
-   :loopStart
-   |/while (1) {
-      /varset targetEntry ${debuffTargetIDs.Token[${i},;]}
-      
-      /if (${targetEntry.Length}==NULL) /goto :loopesc
-
+   | CLEAN UP THE LIST
+   /for i ${Math.Calc[${debuffTargetIDs.Count}-1]} downto 0
+      /varset targetEntry ${debuffTargetIDs.Item[${i}]}
       /varset targetID ${targetEntry.Arg[1,_]}
       /varset targetZone ${targetEntry.Arg[2,_]}
 
       /if (${Zone.ID} != ${targetZone} || ${Spawn[id ${targetID}].Dead}==TRUE || ${SpawnCount[id ${targetID}]}==0) {
-         /echo clearing debuffTargetID:  ${targetID}
-         /varset debuffTargetIDs ${debuffTargetIDs.Replace[${targetEntry};,]}
-         /goto :loopesc
+         /ECHO REMOVING FROM LIST: ${targetID}
+         /invoke ${debuffTargetIDs.Erase[${i}]}
       }
+   /next i
 
+   | PERFORM DEBUFFS
+   /for i ${Math.Calc[${debuffTargetIDs.Count}-1]} downto 0
+      /varset targetID ${debuffTargetIDs.Item[${i}].Arg[1,_]}
+      /echo process: ${targetID}  ${i}
       /call processDebuffsForTargetID ${targetID}
+   /next i
 
-      /varset i ${Math.Calc[${i}+1]}
-      :loopNext
-   }
-   /goto :loopStart
-   :loopesc
 /RETURN
 
 SUB check_autoAbilities
@@ -1217,12 +1227,11 @@ SUB check_autoAbilities
          /delay ${iniAutoAbilities[${i},${bFreeze}].NotEqual[-]}
       }
 
-      /if (${iniAutoAbilities[${i},${bDoCommand}].NotEqual[-]}) {
-         /call e3command "${iniAutoAbilities[${i},${bDoCommand}]}"
-      }
-      
-
       /if (${Me.AbilityReady[${abilityName}]}==TRUE) {
+         /if (${iniAutoAbilities[${i},${bDoCommand}].NotEqual[-]}) {
+            /call e3command "${iniAutoAbilities[${i},${bDoCommand}]}"
+         }
+
          /doability "${abilityName}"
       }
 
@@ -1329,7 +1338,6 @@ SUB processDebuffsForTargetID(int targetID)
          /call fullTarget ${targetID}
          /if (${Target.PctHPs} <= ${iniDebuffs[${i},${bTargetOverHP}]}) /goto :loopnext
          /varset cancelConditions ${cancelConditions},TARGETUNDERHP:${iniDebuffs[${i},${bTargetOverHP}]}
-
       }
 
       /if (${iniDebuffs[${i},${bTargetLifeManaRatio}].NotEqual[-]}) {
@@ -1469,7 +1477,6 @@ SUB stopCamping
 #EVENT DebuffsOn "#1# tells you, 'Debuffs on #2#'"
 #EVENT DebuffsOn "#1# tells the group, 'Debuffs on #2#'"
 SUB Event_DebuffsOn(line, ChatSender, targetID)
-
    | DONT MESS W CORPSES
    /if (${Spawn[id ${targetID}].Type.Equal[Corpse]}) /RETURN CORPSE
 
@@ -1484,21 +1491,21 @@ SUB Event_DebuffsOn(line, ChatSender, targetID)
    }
 
    | CHECK IF THE DEBUFF_TARGETS ARRAY IS ALREADY DEFINED
-   /if (${debuffTargetIDs.Find[${targetID}_${Zone.ID};]}) /RETURN ALREADY_DEBUFFING
+   /if (${debuffTargetIDs.Contains[${targetID}_${Zone.ID}]}) /RETURN ALREADY_DEBUFFING
 
    /call addTargetForDebuffs ${targetID}
 /RETURN
 
 SUB addTargetForDebuffs(int targetID) 
-   /varset debuffTargetIDs ${debuffTargetIDs}${targetID}_${Zone.ID};
-   /echo Added ID.  new list > ${debuffTargetIDs} <
+   /invoke ${debuffTargetIDs.Append[${targetID}_${Zone.ID}]}
+   /echo Added ${targetID} ID to DebuffTargetIDs. List is now ${debuffTargetIDs.Count} length.
 /RETURN
 
 
 #EVENT debuffsOff "e3 debuffs off"
 SUB event_debuffsOff(line, ChatSender, targetID)
    /echo Clearing debuff targets...
-   /varset debuffTargetIDs
+   /invoke ${debuffTargetIDs.Clear}
 /RETURN
 
 

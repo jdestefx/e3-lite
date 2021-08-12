@@ -119,6 +119,7 @@ SUB checkAdhocCastList
    /if (${Me.Casting.ID}!=NULL) /return
    /if (${Me.Moving}==TRUE && ${canCastWhileMoving}==FALSE) /return
    /if (${Me.Invis}==TRUE) /return
+   /if (${Stick.Active}==TRUE) /return
 
    /for i 0 to ${Math.Calc[${adhocCastList.Count}-1]}
       /call e3_cast "${adhocCastList.Item[${i}].Token[2,_]}" "${adhocCastList.Item[${i}].Token[1,_]}"

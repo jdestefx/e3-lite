@@ -246,15 +246,14 @@ SUB determineHealerIndex
 /RETURN
 
 SUB checkHeals
-	/if (${canDoHeals}==FALSE) /RETURN
+	/if (${healerCheckTimer}>0) /RETURN
+	/varset healerCheckTimer 5
+
 	/if (${Me.Moving}==TRUE) /RETURN
 	/if (${iniHeals.Size}==0) /RETURN
-	/if (${Stick.Active}==TRUE) /RETURN
+	/if (${Stick.Active}==TRUE && ${assistTarget}==0) /RETURN
 	/if (${Me.Silenced.ID}!=NULL) /RETURN
 	/if (${Me.Invis}==TRUE) /RETURN
-
-	/if (${healerCheckTimer}>0) /RETURN
-	/varset healerCheckTimer 1s
 
 	/declare i int local
 	/declare cancelConditions string local
@@ -273,7 +272,6 @@ SUB checkHeals
 	/declare botBuffIDs string local 
 
 	/for i 1 to ${iniHeals.Size}
-		/if (${Stick.Active}==TRUE) /goto :loopend
 		/varset triggerIdleCasting TRUE
 		/varset botBuffIDs
 		/varset healEntry ${iniHeals[${i},1]}
@@ -343,25 +341,28 @@ SUB checkHeals
 		}
 
 		/if (${iniHeals[${i},${bHealPct}].NotEqual[-]}) /varset healPct ${iniHeals[${i},${bHealPct}]}
-		/call getNetBotReadyForHeal ${healPct} ${i}
-
-		/if (${Macro.Return.Equal[NONE]}) /goto :loopnexti
-
-		/if (${useHealIndex}==TRUE && ${enableHealIndex}==TRUE && ${otherHealerNetBots.NotEqual[NONE]}) {
-			/varset healTargetName ${Macro.Return}
-			/if (${healTargetName.Count[;]} < ${healIndex}) /goto :loopnexti
-			/varset healTargetName ${healTargetName.Arg[${healIndex},;]}
-		} else {
-			/varset healTargetName ${Macro.Return}
-			/varset healTargetName ${healTargetName.Arg[1,;]}
-		}
 
 		/call e3_getSpellByCastRequestName "${healSpellName}"
 		/vardata healSpell ${Macro.Return}
 
-		/if (${healSpell.TargetType.Equal[Self]}) /varset healTargetName ${Me.CleanName}
+		/if (${iniHeals[${i},${bTargetType}].Upper.Equal[PET]} || ${healSpell.TargetType.Equal[Pet]} ) {
+			/vardata healSpawn Me.Pet
+		} else {
+			/call getNetBotReadyForHeal ${healPct} ${i}
+			/if (${Macro.Return.Equal[NONE]}) /goto :loopnexti		
 
-		/vardata healSpawn Spawn[PC ${healTargetName}]
+			/if (${useHealIndex}==TRUE && ${enableHealIndex}==TRUE && ${otherHealerNetBots.NotEqual[NONE]}) {
+				/varset healTargetName ${Macro.Return}
+				/if (${healTargetName.Count[;]} < ${healIndex}) /goto :loopnexti
+				/varset healTargetName ${healTargetName.Arg[${healIndex},;]}
+			} else {
+				/varset healTargetName ${Macro.Return}
+				/varset healTargetName ${healTargetName.Arg[1,;]}
+			}
+
+			/if (${healSpell.TargetType.Equal[Self]}) /varset healTargetName ${Me.CleanName}
+			/vardata healSpawn Spawn[PC ${healTargetName}]
+		}
 
 		/if (${iniHeals[${i},${bRecastDelay}].NotEqual[-]}) {
 			/if (${isLockoutExpired[heal_${healSpawn.ID}_${healSpell.ID}]}==FALSE) /goto :loopnexti
@@ -376,7 +377,6 @@ SUB checkHeals
 		/if (${isCastReady[${healSpellName}]}==FALSE) {
 			/goto :loopnexti
 		}
-
 
 		/if (${iniHeals[${i},${bDoCommand}].NotEqual[-]}) /docommand ${iniHeals[${i},${bDoCommand}]}
 
@@ -414,6 +414,8 @@ SUB checkHeals
 			/if (${idleCastingTimer}>0) /return
 			/varset triggerIdleCasting FALSE
 		}
+
+		/if (${assistTarget}!=0) /stick off
 
 		/call e3_Cast ${healSpawn.ID} "${healEntry}" "${cancelConditions}" ${triggerIdleCasting}
 
