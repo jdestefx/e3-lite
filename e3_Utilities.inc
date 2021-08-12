@@ -64,9 +64,7 @@ SUB getIniToVar(string iniKey, string varName, string defaultResponse)
 SUB IniToArray(Ini_Key, ArrayName, ArrayScope)
 
 	| Check for the specified ini key.
-	/echo KEY: ${Ini_Key}
-	/echo ${Ini[${Ini_Key}]}
-	
+
 	/if (!${Ini[${Ini_Key}].Length}) {
 		/echo [${Ini_Key}] not found.
 		
@@ -381,7 +379,6 @@ SUB ensureNoLootWindow
 /RETURN
 
 SUB waitForBool(string eval, bool result, string docmd)
-	/echo ${eval} ${${eval}} ${result}
 	:loopstart
 		/doevents
 		/delay 2
@@ -394,7 +391,6 @@ SUB waitForBool(string eval, bool result, string docmd)
 /RETURN
 
 SUB waitForString(string eval, string result, string docmd)
-	/echo ${eval} ${${eval}} ${result}
 	/declare a string local
 	:loopstart
 		/delay 2
@@ -404,7 +400,6 @@ SUB waitForString(string eval, string result, string docmd)
 /RETURN
 
 SUB waitForInt(string eval, int result)
-	/echo ${eval} ${${eval}} ${result}
 	:loopstart
 		/doevents
 		/delay 1
@@ -416,7 +411,6 @@ SUB waitForInt(string eval, int result)
 /RETURN
 
 SUB waitForIntLTE(string eval, int result)
-	/echo ${eval} ${${eval}} ${result}
 	:loopstart
 		/doevents
 		/delay 1
@@ -429,7 +423,6 @@ SUB waitForIntLTE(string eval, int result)
 /RETURN
 
 SUB processArray(string sourceArray, string destArray)
-	|/echo processing: ${sourceArray}
 	/declare i int local 1
 	/declare e string local  | each line in the array. ie:  Courage=SelfOverEnd:50|SelfOverMana:50
 
@@ -584,7 +577,6 @@ sub removeToken(string src, string searchVal, string inDelim, string outDelim)
 	/declare r string local
 
 	/for i 1 to ${Math.Calc[${src.Count[${inDelim}]}+1]}
-		/echo ${src.Token[${i},${inDelim}]}
 		/if (${src.Token[${i},${inDelim}].Equal[${searchVal}]}) /continue
 		/varset r ${r}${outDelim}${src.Token[${i},${inDelim}]}
 	/next i

@@ -248,7 +248,6 @@ SUB checkLoot
    /if (${corpseCount}==0) /return
 
    /for k 1 to ${SpawnCount[npccorpse LOS radius 100]}
-      /echo ${NearestSpawn[${k},npccorpse LOS radius 100].Name}
       /varset corpseIDs[${k}] ${NearestSpawn[${k},npccorpse LOS radius 100].ID}
    /next k
 
@@ -275,7 +274,6 @@ SUB checkLoot
          }
          /loot
          /delay 3
-         /echo .
          /if (${Spawn[id ${corpseIDs[${k}]}].ID}==NULL) /goto :loopnextk
          /if (${Target.ID}==NULL) /tar id ${corpseIDs[${k}]}
       /if (${Window[LootWnd]}==FALSE) /goto :tryLoot

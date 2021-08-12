@@ -189,7 +189,6 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTime
 	/if (${Me.Class.ShortName.Equal[BRD]}) {
 		/if (${bardWasTwisting}==TRUE) {
 			/delay 3
-			/echo /twist ${bardWasTwistingList}
 			/twist ${bardWasTwistingList}
 		} else {
 			/twist off

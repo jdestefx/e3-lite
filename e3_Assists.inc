@@ -32,7 +32,6 @@ SUB assist_CharacterSettings(bool backFillOnly)
    /call WriteToIni "${iniFileCharacter},Assist,StartupPastTags" - ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,DebuffIgnoreExistingTimers" NO ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,AutoAreaDebuff" NO ${backFillOnly}
-   /call WriteToIni "${iniFileCharacter},Assist,AutoAreaDebuffRange" 50 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Assist,AutoAreaDebuffSpawnSearch" "npc radius 50 los range 1 80" ${backFillOnly}
 
 /RETURN
@@ -86,7 +85,6 @@ Sub assist_Setup
    /declare maintainAssistLOS bool outer TRUE
    /declare autoDisarm bool outer FALSE
    /declare autoAreaDebuff bool outer FALSE
-   /declare autoAreaDebuffRange int outer 50
    /declare autoAreaDebuffSpawnSearch string outer NONE
    /declare autoDebuffCheckTimer timer outer 0
 
@@ -161,7 +159,6 @@ Sub assist_Setup
    /call getIniToVar "${iniFileCharacter},Assist,StartupPastTags" importPastTags -
    /call getIniToVar "${iniFileCharacter},Assist,DebuffIgnoreExistingTimers" debuffIgnoreExistingTimers FALSE
    /call getIniToVar "${iniFileCharacter},Assist,AutoAreaDebuff" autoAreaDebuff NO
-   /call getIniToVar "${iniFileCharacter},Assist,AutoAreaDebuffRange" autoAreaDebuffRange 50
    /call getIniToVar "${iniFileCharacter},Assist,AutoAreaDebuffSpawnSearch" autoAreaDebuffSpawnSearch NONE
 
    /varset slayIndex ${Math.Calc[${slayIndex}-1]}
@@ -471,10 +468,6 @@ SUB checkAutoMez
 
          /if (${Macro.Return.Equal[CAST_SUCCESS]}) {
             /call lockout mez_${targetID} ${Math.Calc[${xSpell.Duration.TotalSeconds}-${autoMezTimerMarginSeconds}]}s
-            /echo ${xSpell}
-            /echo ${xSpell.Duration.TotalSeconds}
-            /echo ${autoMezTimerMarginSeconds}
-            /echo /call lockout mez_${targetID} ${Math.Calc[${xSpell.Duration.TotalSeconds}-${autoMezTimerMarginSeconds}]}s
          }      
       }
 
@@ -556,7 +549,6 @@ SUB checkMeleeRetreat
    }
 
    /if (${Me.PctHPs} <= ${meleeRetreatPercent}) {
-      /echo here2
 
       /if (${amMeleeRetreating}==FALSE) {
          /varset amMeleeRetreating TRUE
@@ -1197,7 +1189,6 @@ SUB checkDebuffs
    | PERFORM DEBUFFS
    /for i ${Math.Calc[${debuffTargetIDs.Count}-1]} downto 0
       /varset targetID ${debuffTargetIDs.Item[${i}].Arg[1,_]}
-      /echo process: ${targetID}  ${i}
       /call processDebuffsForTargetID ${targetID}
    /next i
 
@@ -1270,6 +1261,7 @@ SUB clearLongTermSpellTimers(int targetID)
 SUB processDebuffsForTargetID(int targetID)
    /declare i int local
    /declare castName string local
+   /declare castNameActual string local
    /declare spellTime int local
    /declare debuffResult string local
    /declare castSpell spell local
@@ -1392,6 +1384,17 @@ SUB processDebuffsForTargetID(int targetID)
          }
       }
 
+      | A CAST WILL HAPPEN -- PRE-TARGET AND CHECK FOR BUFF
+      /call fullTarget ${targetID}
+      /if (${Target.Buff[${castSpell.Name}].ID}!=NULL) {
+         /if (${Math.Calc[${Target.BuffDuration[${castSpell.Name}].TotalSeconds} * ${castSpell.MyDuration.TotalSeconds} > 0.3]}) {
+            /varset spellTime ${Target.BuffDuration[${castSpell.Name}].TotalSeconds}
+            /echo Detected debuff already on target. Locking out for duration: ${spellTime}
+            /call lockout ${timerName} ${spellTime}
+            /continue
+         }
+      }
+
       :resistRetry
 
       | CAST THE DEBUFF
@@ -1458,7 +1461,10 @@ SUB tauntSuccessListContains(string s)
 SUB fullTarget(int targetID)
    /if (${Target.ID} != ${targetID}) {
       /tar id ${targetID}
-      /delay 10
+
+      /while (${Target.BuffsPopulated}==FALSE) {
+         /delay 2
+      }
    }
 /RETURN
 

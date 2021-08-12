@@ -50,8 +50,6 @@ SUB e3_Setup(string iniSuffix)
    /declare classes_RangeAssist string outer WIZ,NEC,MAG,ENC,SHM,CLR,DRU
    /declare classes_PassiveAssist string CLR,DRU,SHM,ENC
    /declare canDoBuffs bool outer ${classes_Buffs.Find[${myClass}]}
-   |/declare canDoHeals bool outer TRUE ${classes_Heals.Find[${myClass}]}
-   /declare canDoHeals bool outer TRUE 
    /declare canDoNukes bool outer ${classes_Nukes.Find[${myClass}]}
    /declare canDoDoTs bool outer ${classes_DoTs.Find[${myClass}]}
    /declare canCastWhileMoving bool outer ${castWhileMovingClasses.Find[${myClass}]}

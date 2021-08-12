@@ -228,7 +228,6 @@ SUB processBackgroundQueue
 
 
       /for i 1 to 20
-         /echo ${Me.Buff[${i}].ID}
          /if (${Me.Buff[${i}].ID}!=NULL) {
             /if (${Me.Buff[${i}].Name.Equal[Selo's Song of Travel]}) {
                /bc clicking off ${i} BuffWindow BW_Buff${Math.Calc[${i}-1]}_Button leftmouseup
@@ -259,7 +258,6 @@ SUB EVENT_followMe(string line, string chatSender, string stickOpts)
    /call setAssistOff
    
    /if (${Me.Class.ShortName.NotEqual[BRD]}) /interrupt
-   /echo /stick id ${Spawn[pc ${chatSender}].ID} ${stickOpts}
    /stick id ${Spawn[pc ${chatSender}].ID} ${stickOpts}
 /RETURN
 
