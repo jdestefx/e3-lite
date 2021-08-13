@@ -277,6 +277,7 @@ SUB checkHeals
 		/varset healEntry ${iniHeals[${i},1]}
 		/if (${healEntry.Equal[-]}) /goto :loopend
 
+		/if (${iniHeals[${i},${bEnabled}].Equal[NO]}) /continue
 
 		/varset healSpellName ${iniHeals[${i},1]}
 		/varset healLockoutTimerName heal_${healSpawn.ID}_${healSpellName}
@@ -343,7 +344,10 @@ SUB checkHeals
 		/if (${iniHeals[${i},${bHealPct}].NotEqual[-]}) /varset healPct ${iniHeals[${i},${bHealPct}]}
 
 		/if (${isRealSpell[${healSpellName}]}==FALSE) {
-			/ECHO Warning: "${healSpellName" valid sanity checks. Bad spelling? Not a real spell? Run out of item?
+			/beep
+			/echo >>> Warning: "${healSpellName}" valid sanity checks. Bad spelling? Not a real spell? Run out of item?
+			/echo >>> Disabling "${healSpellName}" heal entry. Restart E3 to re-enable.
+         	/varset iniHeals[${i},${bEnabled}] NO
 			/continue
 		}
 
