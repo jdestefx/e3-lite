@@ -466,6 +466,8 @@ SUB processArray(string sourceArray, string destArray)
 			
 			/if (${Defined[b${sectionName}]}==FALSE) {
 				/bc Warning: >>> ${sectionName} <<< is not a recognized parameter.
+				/beep
+				/beep
 				/continue
 			}
 			

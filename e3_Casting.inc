@@ -168,7 +168,9 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTime
 			/break
 		}
 
-		/if (${Spawn[id ${targetID}].Dead}==TRUE) {
+		/if (${Spawn[id ${targetID}].Dead}==TRUE || ${Spawn[id ${targetID}].ID}==NULL) {
+			/bc Target Dead. Cancelling cast. 
+			/interrupt
 			/return CAST_TARGET_DEAD
 		}
 
@@ -203,7 +205,7 @@ SUB e3_Cast(int targetID, string castName, string cancelConditions, int waitTime
 	| RESET COMBATTIMER TO WHAT IT WAS BEFORE CAST START
 	/if (${combatTimerValue}>0) /varset combatTimer ${combatDelay}
 
-	/echo CR:  CastResult: ${Cast.Result}
+	/echo CastResult: ${Cast.Result}
 
 	/if (${Cast.Result.Equal[CAST_FIZZLE]}) {
 		/varset fizzleCount ${Math.Calc[${fizzleCount}+1]}
@@ -277,12 +279,6 @@ SUB checkCancelConditions(string conditions)
 	/if (${conditions.Upper.Find[TARGETHASBUFF:]}!=0) {
 		/call getEntryParam "${conditions}" TARGETHASBUFF
 		/if (${Target.Buff[${Macro.Return}].ID}!=NULL) {
-			/return TRUE
-		}
-	}
-
-	/IF (${conditions.Upper.Find[TARGETDEAD]}!=0) {
-		/if (${Target.Dead}==TRUE || ${Target.ID}==NULL) {
 			/return TRUE
 		}
 	}

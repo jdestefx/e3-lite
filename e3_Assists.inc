@@ -1277,10 +1277,9 @@ SUB processDebuffsForTargetID(int targetID)
 
    /for i 1 to ${iniDebuffs.Size}
       /varset currentResistCount 0
-      /varset cancelConditions TARGETDEAD
+      /varset cancelConditions
 
       /if (${iniDebuffs[${i},1].Equal[-]}) /goto :loopesc
-
 
       /if (${iniDebuffs[${i},${bNotIfAssistTag}].NotEqual[-]}) {
          /if (${assistTags.Count}>0 || ${persistentAssistTags.Count}>0) {
@@ -1340,7 +1339,6 @@ SUB processDebuffsForTargetID(int targetID)
             /continue
          }
       }
-
 
       /if (${iniDebuffs[${i},${bMaxResists}].NotEqual[-]}) {
          /varset maxResists ${iniDebuffs[${i},${bMaxResists}]}
@@ -1461,10 +1459,13 @@ SUB tauntSuccessListContains(string s)
 SUB fullTarget(int targetID)
    /if (${Target.ID} != ${targetID}) {
       /tar id ${targetID}
+      /delay 7
 
-      /while (${Target.BuffsPopulated}==FALSE) {
-         /delay 2
-      }
+      |/while (${Target.BuffsPopulated}==FALSE) {
+      |   /if (${Spawn[id ${targetID}].ID}==NULL) /return
+      |   /if (${Target.ID} != ${targetID}) /tar id ${targetID}
+      |   /delay 2
+      |}
    }
 /RETURN
 

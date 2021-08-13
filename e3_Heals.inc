@@ -342,11 +342,16 @@ SUB checkHeals
 
 		/if (${iniHeals[${i},${bHealPct}].NotEqual[-]}) /varset healPct ${iniHeals[${i},${bHealPct}]}
 
+		/if (${isRealSpell[${healSpellName}]}==FALSE) {
+			/ECHO Warning: "${healSpellName" valid sanity checks. Bad spelling? Not a real spell? Run out of item?
+			/continue
+		}
+
 		/call e3_getSpellByCastRequestName "${healSpellName}"
 		/vardata healSpell ${Macro.Return}
 
-		/if (${iniHeals[${i},${bTargetType}].Upper.Equal[PET]} || ${healSpell.TargetType.Equal[Pet]} ) {
-			/vardata healSpawn Me.Pet
+		/if (${iniHeals[${i},${bTargetType}].Upper.Equal[PET]} || ${healSpell.TargetType.Equal[Pet]} && ${Me.Pet.ID}!=NULL ) {
+			/vardata healSpawn Spawn[id ${Me.Pet.ID}]
 		} else {
 			/call getNetBotReadyForHeal ${healPct} ${i}
 			/if (${Macro.Return.Equal[NONE]}) /goto :loopnexti		
@@ -361,7 +366,7 @@ SUB checkHeals
 			}
 
 			/if (${healSpell.TargetType.Equal[Self]}) /varset healTargetName ${Me.CleanName}
-			/vardata healSpawn Spawn[PC ${healTargetName}]
+			/vardata healSpawn Spawn["${healTargetName}"]
 		}
 
 		/if (${iniHeals[${i},${bRecastDelay}].NotEqual[-]}) {
@@ -480,7 +485,8 @@ SUB getNetBotReadyForHeal(int healPct, int iniHealIndex)
 		/for i 1 to 12
 			/if (${Me.XTarget[${i}].ID}==NULL) /continue
 			/if (${Me.XTarget[${i}].ID}==0) /continue
-			/if (${Me.XTarget[${i}].Type.NotEqual[PC]}) /continue
+			/if (${Me.XTarget[${i}].Type.NotEqual[PC]} && ${Me.XTarget[${i}].Type.NotEqual[Pet]}) /continue
+			/if (${Me.XTarget[${i}].Type.Equal[Pet]} && ${Me.XTarget[${i}].Master.Type.NotEqual[PC]}) /continue
 			/if (${Me.XTarget[${i}].PctHPs} <= ${healPct}) {
 				/if (${healNames.Index[${Me.XTarget[${i}].CleanName}]}!=-1) /continue
 				/if (${isLockoutExpired[heal_${Me.XTarget[${i}].ID}_${iniHeals[${iniHealIndex},1]}]}==FALSE) /continue
