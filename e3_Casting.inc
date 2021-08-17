@@ -17,7 +17,7 @@ SUB getSpellDurationByRequestName(string castRequest)
 	/declare s spell local
 	/call e3_getSpellByCastRequestName "${castRequest}"
 
-	/if (${Macro.Return}==NULL) /return 0
+	/if (${Macro.Return.Equal[NULL]}) /return 0
 	/vardata s ${Macro.Return}
 
 	/return ${s.MyDuration.TotalSeconds}

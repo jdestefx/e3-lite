@@ -32,6 +32,7 @@ Sub buffs_Setup
 /RETURN
 
 SUB validateBuffs
+   /if (${iniBuffs}==NULL) /return
 
    /declare i int local 
 
