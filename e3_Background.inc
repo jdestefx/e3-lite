@@ -244,7 +244,8 @@ SUB EVENT_zoned
    /timed 50 /hidec looted
 /RETURN
 
-
+#EVENT followMe "[#1#(msg)] e3 follow me"
+#EVENT followMe "[#1#(msg)] e3 follow me #*#"
 #EVENT followMe "<#1#> e3 follow me"
 #EVENT followMe "<#1#> e3 follow me #2#"
 SUB EVENT_followMe(string line, string chatSender, string stickOpts)

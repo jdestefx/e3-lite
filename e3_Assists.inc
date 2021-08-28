@@ -455,7 +455,7 @@ SUB checkAutoMez
          /call e3_getSpellByCastRequestName "${useMezSpell}"
          /vardata xSpell ${Macro.Return}
 
-         /call e3_cast ${targetID} "${useMezSpell}" NETBOTATTACKING,TARGETISASSITTARGET
+         /call e3_cast ${targetID} "${useMezSpell}" "NETBOTATTACKING:${targetID},TARGETISASSITTARGET"
          /if (${Me.Class.ShortName.Equal[BRD]}) {
             /stopcast
             /delay 2
@@ -1367,8 +1367,8 @@ SUB processDebuffsForTargetID(int targetID)
          /deletevar ${timerName}
       }
 
-      /if (${FindItemCount[${castName}]}>0) {
-         /call waitForInt "FindItem[${castName}].TimerReady" 0
+      /if (${FindItemCount[=${castName}]}>0) {
+         /call waitForInt "FindItem[=${castName}].TimerReady" 0
       }
 
       /if (${Spawn[id ${targetID}].Dead}==TRUE) {

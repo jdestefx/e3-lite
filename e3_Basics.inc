@@ -25,6 +25,8 @@ Sub basics_Setup
    /declare renderBG int outer 0
    /declare actorClipPlane int outer 0
 
+   /declare autoStandFromFeign bool outer TRUE
+   /declare isDriver bool outer FALSE
 
    | INI SETTINGS
    /declare expSpam bool outer
@@ -32,6 +34,8 @@ Sub basics_Setup
    /call getIniToVar "${iniFileCharacter},Misc,EXP Spam" expSpam TRUE
    /call getIniToVar "${iniFileCharacter},Misc,Looter" looter FALSE
    /call getIniToVar "${iniFileCharacter},Misc,HideAdvlDuringCombat" hideAdvlDuringCombat TRUE
+   /call getIniToVar "${iniFileCharacter},Misc,AutoStandFromFeign" autoStandFromFeign TRUE
+   /call getIniToVar "${iniFileCharacter},Misc,Driver" isDriver FALSE
    /call getIniToVar "${iniFileCharacter},System,BackgroundFPS" backgroundFPS 30
    /call getIniToVar "${iniFileCharacter},System,ForegroundFPS" foregroundFPS 60
    /call getIniToVar "${iniFileCharacter},System,EnageClipDown" enageClipDown FALSE
@@ -51,9 +55,11 @@ Sub basics_Setup
 /return
 
 SUB basics_CharacterSettings(bool backFillOnly)
+   /call WriteToIni "${iniFileCharacter},Misc,AutoStandFromFeign" YES ${backFillOnly}
+   /call WriteToIni "${iniFileCharacter},Misc,Driver" NO ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Misc,EQBC Channels" "team" ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Misc,EXP Spam" YES ${backFillOnly}
-   /call WriteToIni "${iniFileCharacter},Misc,Looter" NO ${backFillOnly}
+   |/call WriteToIni "${iniFileCharacter},Misc,Looter" NO ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},Misc,HideAdvlDuringCombat" YES ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},System,BackgroundFPS" 30 ${backFillOnly}
    /call WriteToIni "${iniFileCharacter},System,ForegroundFPS" 60 ${backFillOnly}

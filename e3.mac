@@ -50,7 +50,9 @@ SUB Main()
 			/if (${assistTarget}!=0) /call setAssistOff
 			/goto :mainLoopStart
 		}
-		/if (${Me.Feigning}==TRUE) /timed 15 /stand
+		/if (${Me.Feigning}==TRUE && ${autoStandFromFeign}==TRUE) {
+			/timed 2 /stand
+		}
 
 		/if (!${MacroQuest.GameState.Equal[INGAME]}) /end
 		/if (!${Bool[${Me.Class}]}) /endmacro
@@ -70,7 +72,7 @@ SUB Main()
 		/if (${actionTaken}) /varset actionTaken FALSE
 
 		| STANDING AROUND WITH ATTACK ON? TURN IT OFF
-		/if (${assistTarget}==0 && ${Me.Combat}==TRUE) {
+		/if (${assistTarget}==0 && ${Me.Combat}==TRUE && ${isDriver}==FALSE) {
 			/attack off
 		}
 
@@ -110,11 +112,6 @@ SUB checkOpenWindows
 	/return FALSE
 /RETURN
 
-|--------------------------------------------------------------------------------------------------------------------|
-|- Background events and functions that are checked even while casting or otherwise considered active.		   		-|
-|--------------------------------------------------------------------------------------------------------------------|
-|- This function is checked constantly, included events and functions should have minimal character interaction.	-|
-|--------------------------------------------------------------------------------------------------------------------|
 SUB Background_Events
 
 	| autoaccept trade

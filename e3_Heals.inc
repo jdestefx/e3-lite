@@ -370,7 +370,7 @@ SUB checkHeals
 			}
 
 			/if (${healSpell.TargetType.Equal[Self]}) /varset healTargetName ${Me.CleanName}
-			/vardata healSpawn Spawn["${healTargetName}"]
+			/vardata healSpawn Spawn[=${healTargetName}]
 		}
 
 		/if (${iniHeals[${i},${bRecastDelay}].NotEqual[-]}) {
